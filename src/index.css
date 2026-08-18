@@ -1,9 +1,20 @@
 :root {
-  --background: #ffffff;
-  --border: #dddddd;
-  --text: #111111;
-  --text-muted: #666666;
-  --font-sans: Arial, "Helvetica Neue", sans-serif;
+  --background: #0b0e10;
+  --background-raised: #101518;
+  --surface: #151b1f;
+  --surface-soft: #1a2125;
+  --surface-hover: #20282d;
+  --border: #2a3338;
+  --border-strong: #3c474d;
+  --text: #f3f5f6;
+  --text-soft: #c9d0d4;
+  --text-muted: #849097;
+  --accent: #f2c94c;
+  --accent-strong: #ffd75f;
+  --success: #65d7a5;
+  --danger: #ff6f6f;
+  --font-sans: Inter, "Noto Sans JP", "Segoe UI", sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
   color: var(--text);
   background: var(--background);
@@ -18,22 +29,71 @@
   box-sizing: border-box;
 }
 
-html,
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: var(--background);
+  scroll-behavior: smooth;
+}
+
 body {
   min-width: 320px;
   min-height: 100svh;
   margin: 0;
-  background: var(--background);
+  background:
+    radial-gradient(circle at 8% 4%, rgb(72 199 232 / 8%), transparent 27rem),
+    radial-gradient(circle at 90% 28%, rgb(242 201 76 / 5%), transparent 34rem),
+    var(--background);
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: linear-gradient(rgb(255 255 255 / 2%) 1px, transparent 1px);
+  background-size: 100% 36px;
+  content: "";
+  pointer-events: none;
 }
 
 button,
 input,
 textarea,
 select {
+  color: inherit;
   font: inherit;
 }
 
+button,
+select {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+a {
+  color: inherit;
+}
+
 ::selection {
-  color: #ffffff;
-  background: #111111;
+  color: #111416;
+  background: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
