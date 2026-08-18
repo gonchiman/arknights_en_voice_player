@@ -11,13 +11,7 @@ export function AppLayout() {
     <div className="app-shell">
       <header className="app-header">
         <NavLink className="brand" to="/" aria-label="トップページへ移動">
-          <span className="brand-mark" aria-hidden="true">
-            A
-          </span>
-          <span>
-            <strong>EN Voice Player</strong>
-            <small>Arknights learning tool</small>
-          </span>
+          Arknights EN Voice Player
         </NavLink>
 
         <nav className="primary-nav" aria-label="メインメニュー">
