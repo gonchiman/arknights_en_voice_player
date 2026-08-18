@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { Icon } from '../components/Icon'
-import { PageHeader } from '../components/PageHeader'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { getOperator, operators, voiceLines } from '../data/operators'
 import { useAppState } from '../state/useAppState'
@@ -72,25 +71,6 @@ export function DictationPage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="LISTENING LAB / DICTATION"
-        title="Listen first. Type what you hear."
-        description="テキストを隠したまま英語ボイスを聞き、聞き取った内容を入力します。句読点と大文字・小文字は採点に影響しません。"
-        action={
-          <div className="library-stats dictation-stats">
-            <span>
-              <strong>{attempts.length}</strong> attempts
-            </span>
-            <span>
-              <strong>{averageScore}%</strong> average
-            </span>
-            <span>
-              <strong>{mastered}</strong> mastered
-            </span>
-          </div>
-        }
-      />
-
       <section className="dictation-toolbar">
         <label>
           <span>VOICE SET</span>
@@ -105,6 +85,11 @@ export function DictationPage() {
               ))}
           </select>
         </label>
+        <div className="dictation-metrics" aria-label="学習状況">
+          <span><strong>{attempts.length}</strong> attempts</span>
+          <span><strong>{averageScore}%</strong> average</span>
+          <span><strong>{mastered}</strong> mastered</span>
+        </div>
         <button type="button" className="quiet-button" onClick={chooseNext}>
           <Icon name="shuffle" size={17} />
           Random voice
@@ -113,9 +98,6 @@ export function DictationPage() {
 
       {currentVoice && currentOperator ? (
         <section className="dictation-workspace">
-          <div className="exercise-index" aria-hidden="true">
-            {String((pool.indexOf(currentVoice) + 1) % 100).padStart(2, '0')}
-          </div>
           <div className="exercise-operator">
             <span style={{ backgroundColor: currentOperator.accent }}>
               {currentOperator.initials}

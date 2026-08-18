@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Icon } from '../components/Icon'
 import { OperatorCard } from '../components/OperatorCard'
-import { PageHeader } from '../components/PageHeader'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { getOperator, operators, voiceLines } from '../data/operators'
 import { useAppState } from '../state/useAppState'
@@ -16,22 +15,6 @@ export function FavoritesPage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="PERSONAL ARCHIVE / FAVORITES"
-        title="Your saved voices."
-        description="お気に入りのオペレーターとボイスはこの端末に保存されます。ログインなしで、すぐに続きを聞けます。"
-        action={
-          <div className="library-stats">
-            <span>
-              <strong>{favoriteOperators.length}</strong> operators
-            </span>
-            <span>
-              <strong>{favoriteVoices.length}</strong> voices
-            </span>
-          </div>
-        }
-      />
-
       {favoriteOperators.length === 0 && favoriteVoices.length === 0 ? (
         <section className="favorites-empty">
           <span className="empty-icon">
@@ -51,7 +34,7 @@ export function FavoritesPage() {
             <div className="section-heading">
               <div>
                 <p className="eyebrow">SAVED OPERATORS</p>
-                <h2>{favoriteOperators.length} operators</h2>
+                <h2>{favoriteOperators.length} saved operators</h2>
               </div>
             </div>
             {favoriteOperators.length > 0 ? (
@@ -73,7 +56,7 @@ export function FavoritesPage() {
             <div className="section-heading">
               <div>
                 <p className="eyebrow">SAVED VOICE RECORDS</p>
-                <h2>{favoriteVoices.length} voices</h2>
+                <h2>{favoriteVoices.length} saved voices</h2>
               </div>
             </div>
             {favoriteVoices.length > 0 ? (

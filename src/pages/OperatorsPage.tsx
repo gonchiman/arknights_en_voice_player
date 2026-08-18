@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { Icon } from '../components/Icon'
 import { OperatorCard } from '../components/OperatorCard'
-import { PageHeader } from '../components/PageHeader'
 import { VoicePlayer } from '../components/VoicePlayer'
 import {
   classLabels,
@@ -69,22 +68,6 @@ export function OperatorsPage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="RHODES ISLAND / VOICE ARCHIVE"
-        title="Find a voice worth replaying."
-        description="オペレーターを検索し、英語ボイスを再生しながら日英テキストを確認できます。気になる声は保存して、あとから繰り返し聞けます。"
-        action={
-          <div className="library-stats" aria-label="ライブラリ統計">
-            <span>
-              <strong>{operators.length}</strong> operators
-            </span>
-            <span>
-              <strong>{voiceLines.length}</strong> voices
-            </span>
-          </div>
-        }
-      />
-
       <section className="filter-panel" aria-label="オペレーター検索条件">
         <label className="search-field">
           <span className="sr-only">名前・陣営・職業で検索</span>
@@ -153,7 +136,9 @@ export function OperatorsPage() {
           <div className="section-heading">
             <div>
               <p className="eyebrow">OPERATOR INDEX</p>
-              <h2>{filteredOperators.length} results</h2>
+              <h2>
+                {filteredOperators.length} / {operators.length} operators · {voiceLines.length} voices
+              </h2>
             </div>
             <button type="button" className="quiet-button" onClick={resetFilters}>
               Reset filters
