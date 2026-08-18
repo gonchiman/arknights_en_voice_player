@@ -33,8 +33,7 @@ export function VoicePlayer({
 
   useEffect(() => {
     const audio = audioRef.current
-    if (!audio) return
-    audio.pause()
+    audio?.pause()
     setIsPlaying(false)
     setCurrentTime(0)
     setDuration(0)
@@ -43,7 +42,7 @@ export function VoicePlayer({
 
   const togglePlayback = async () => {
     const audio = audioRef.current
-    if (!audio) return
+    if (!audio || !voice.audioUrl) return
 
     if (audio.paused) {
       try {
@@ -71,6 +70,26 @@ export function VoicePlayer({
     if (!audio) return
     audio.currentTime = value
     setCurrentTime(value)
+  }
+
+  if (!voice.audioUrl) {
+    return (
+      <article className="voice-player voice-unavailable">
+        <div className="voice-player-topline">
+          <div>
+            <span className="voice-code">
+              {voice.fileCode.replace('CN_', 'EN / ')}
+            </span>
+            <h3>{voice.label}</h3>
+          </div>
+          <span className="unavailable-badge">NO AUDIO</span>
+        </div>
+        <div className="unavailable-message" role="status">
+          <Icon name="volume" size={18} />
+          <span>英語音声データがありません。</span>
+        </div>
+      </article>
+    )
   }
 
   return (

@@ -618,6 +618,32 @@
   text-decoration: underline;
 }
 
+.voice-unavailable {
+  border-style: dashed;
+  background: rgb(255 255 255 / 1.4%);
+}
+
+.unavailable-badge {
+  padding: 4px 6px;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+}
+
+.unavailable-message {
+  margin-top: 16px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-left: 2px solid var(--text-muted);
+  color: var(--text-muted);
+  background: rgb(255 255 255 / 2%);
+  font-size: 11px;
+}
+
 .voice-transcript {
   margin-top: 16px;
   padding-top: 15px;

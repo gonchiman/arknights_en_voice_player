@@ -13,6 +13,9 @@ type OperatorCardProps = {
 export function OperatorCard({ operator, selected = false, onSelect }: OperatorCardProps) {
   const { favoriteOperatorIds, toggleOperatorFavorite } = useAppState()
   const isFavorite = favoriteOperatorIds.includes(operator.id)
+  const playableVoices = operator.voices.filter(
+    (voice) => voice.audioUrl !== null,
+  ).length
   const style = { '--operator-accent': operator.accent } as CSSProperties
 
   return (
@@ -35,7 +38,11 @@ export function OperatorCard({ operator, selected = false, onSelect }: OperatorC
         </span>
         <span className="operator-card-meta">
           <span>{classLabels[operator.operatorClass]}</span>
-          <span>{operator.voices.length} voices</span>
+          <span>
+            {playableVoices === operator.voices.length
+              ? `${playableVoices} voices`
+              : `${playableVoices}/${operator.voices.length} voices`}
+          </span>
         </span>
       </button>
       <FavoriteButton

@@ -14,7 +14,7 @@ export type VoiceLine = {
   category: 'Talk' | 'Battle' | 'Greeting'
   english: string
   japanese: string
-  audioUrl: string
+  audioUrl: string | null
 }
 
 export type Operator = {

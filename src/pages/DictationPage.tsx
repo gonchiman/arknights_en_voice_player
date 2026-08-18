@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { VoicePlayer } from '../components/VoicePlayer'
-import { getOperator, operators, voiceLines } from '../data/operators'
+import {
+  getOperator,
+  operators,
+  playableVoiceLines,
+  voiceLines,
+} from '../data/operators'
 import { useAppState } from '../state/useAppState'
 import { answerScore } from '../utils/text'
 
@@ -13,15 +18,19 @@ type Result = {
 export function DictationPage() {
   const { attempts, recordAttempt, clearProgress } = useAppState()
   const [operatorFilter, setOperatorFilter] = useState('all')
-  const [currentVoiceId, setCurrentVoiceId] = useState(voiceLines[0]?.id ?? '')
+  const [currentVoiceId, setCurrentVoiceId] = useState(
+    playableVoiceLines[0]?.id ?? '',
+  )
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState<Result | null>(null)
 
   const pool = useMemo(
     () =>
       operatorFilter === 'all'
-        ? voiceLines
-        : voiceLines.filter((line) => line.operatorId === operatorFilter),
+        ? playableVoiceLines
+        : playableVoiceLines.filter(
+            (line) => line.operatorId === operatorFilter,
+          ),
     [operatorFilter],
   )
   const currentVoice = pool.find((line) => line.id === currentVoiceId) ?? pool[0]
@@ -48,8 +57,8 @@ export function DictationPage() {
     setOperatorFilter(operatorId)
     const nextPool =
       operatorId === 'all'
-        ? voiceLines
-        : voiceLines.filter((line) => line.operatorId === operatorId)
+        ? playableVoiceLines
+        : playableVoiceLines.filter((line) => line.operatorId === operatorId)
     setCurrentVoiceId(nextPool[0]?.id ?? '')
     setAnswer('')
     setResult(null)
@@ -77,7 +86,9 @@ export function DictationPage() {
           <select value={operatorFilter} onChange={(event) => changeOperator(event.target.value)}>
             <option value="all">All available operators</option>
             {operators
-              .filter((operator) => operator.voices.length > 0)
+              .filter((operator) =>
+                operator.voices.some((voice) => voice.audioUrl !== null),
+              )
               .map((operator) => (
                 <option key={operator.id} value={operator.id}>
                   {operator.name} / {operator.japaneseName}

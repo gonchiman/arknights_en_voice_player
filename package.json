@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "check": "npm run lint && npm run build",
     "generate:voices": "node scripts/generate-voice-data.mjs",
+    "validate:voices": "node scripts/validate-voice-data.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

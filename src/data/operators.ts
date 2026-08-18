@@ -10,7 +10,7 @@ function voicesFor(operatorId: string): VoiceLine[] {
       ...record,
       id: `${operatorId}-${record.fileCode.toLowerCase()}`,
       operatorId,
-      audioUrl: `${audioRoot}/${audioPath}`,
+      audioUrl: audioPath ? `${audioRoot}/${audioPath}` : null,
     }),
   )
 }
@@ -139,6 +139,9 @@ export const operators: Operator[] = [
 ]
 
 export const voiceLines = operators.flatMap((operator) => operator.voices)
+export const playableVoiceLines = voiceLines.filter(
+  (line): line is VoiceLine & { audioUrl: string } => line.audioUrl !== null,
+)
 
 export const operatorClasses: OperatorClass[] = [
   'Vanguard',

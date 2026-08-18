@@ -7,7 +7,7 @@ export type OperatorVoiceRecord = {
   category: 'Talk' | 'Battle' | 'Greeting'
   english: string
   japanese: string
-  audioPath: string
+  audioPath: string | null
 }
 
 export const operatorVoiceRecords: Record<string, OperatorVoiceRecord[]> = {
@@ -1999,6 +1999,14 @@ export const operatorVoiceRecords: Record<string, OperatorVoiceRecord[]> = {
       "english": "We're counting on you again today, little apple.",
       "japanese": "リンゴちゃん、今日もよろしくね！",
       "audioPath": "char_151_myrtle/CN_027.mp3"
+    },
+    {
+      "fileCode": "CN_028",
+      "label": "In Battle 4",
+      "category": "Battle",
+      "english": "",
+      "japanese": "",
+      "audioPath": null
     },
     {
       "fileCode": "CN_029",

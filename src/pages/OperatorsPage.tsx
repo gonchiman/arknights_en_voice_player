@@ -8,6 +8,7 @@ import {
   classLabels,
   operatorClasses,
   operators,
+  playableVoiceLines,
   voiceLines,
 } from '../data/operators'
 import { useAppState } from '../state/useAppState'
@@ -137,7 +138,8 @@ export function OperatorsPage() {
             <div>
               <p className="eyebrow">OPERATOR INDEX</p>
               <h2>
-                {filteredOperators.length} / {operators.length} operators · {voiceLines.length} voices
+                {filteredOperators.length} / {operators.length} operators ·{' '}
+                {playableVoiceLines.length} playable / {voiceLines.length} records
               </h2>
             </div>
             <button type="button" className="quiet-button" onClick={resetFilters}>

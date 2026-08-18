@@ -18,7 +18,7 @@
 
 ## 収録データ
 
-カタログには8名のオペレーターと、再生・ディクテーションに使える英語音声295件を収録しています。Amiya、Texas、Exusiai、SilverAsh、Nearl、Ptilopsis、Lapplandは各37件、Myrtleは配信元に存在する36件を収録しています。
+カタログには8名のオペレーターと296件のボイス枠を収録しています。英語音声を再生できるのは295件です。Myrtleの`CN_028 / In Battle 4`は配信元に音声ファイルがないため、欠損状態が分かるプレースホルダーを表示します。
 
 英語・日本語テキストは[ArknightsGameData YoStar](https://github.com/Kengxxiao/ArknightsGameData_YoStar)、音声は[Arknights Audio](https://github.com/PseudoMon/arknights-audio)の公開データを使用しています。音声はネットワーク経由で再生し、取得できない場合は対応ブラウザの英語音声合成へ切り替えられます。ゲーム音声はリポジトリへ複製していません。
 
@@ -26,6 +26,12 @@
 
 ```bash
 npm run generate:voices
+```
+
+生成済みデータと全音声URLは次のコマンドで検証できます。データ欠損、重複ID、HTTPエラー、音声以外のレスポンスを検出すると失敗します。
+
+```bash
+npm run validate:voices
 ```
 
 ## 開発
