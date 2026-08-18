@@ -18,9 +18,15 @@
 
 ## 収録データ
 
-カタログには8名のオペレーターを収録しています。現在、再生・ディクテーションに使える英語音声はAmiyaとTexasの計8件です。`src/data/operators.ts`のデータ型へ同じ形式で追加できます。
+カタログには8名のオペレーターと、再生・ディクテーションに使える英語音声295件を収録しています。Amiya、Texas、Exusiai、SilverAsh、Nearl、Ptilopsis、Lapplandは各37件、Myrtleは配信元に存在する36件を収録しています。
 
-音声は[Arknights Audio](https://github.com/PseudoMon/arknights-audio)の公開ファイルをネットワーク経由で再生します。取得できない場合は、対応ブラウザで英語の音声合成を使った確認へ切り替えられます。ゲーム音声はリポジトリへ複製していません。
+英語・日本語テキストは[ArknightsGameData YoStar](https://github.com/Kengxxiao/ArknightsGameData_YoStar)、音声は[Arknights Audio](https://github.com/PseudoMon/arknights-audio)の公開データを使用しています。音声はネットワーク経由で再生し、取得できない場合は対応ブラウザの英語音声合成へ切り替えられます。ゲーム音声はリポジトリへ複製していません。
+
+登録済みオペレーターの音声データは次のコマンドで再生成できます。
+
+```bash
+npm run generate:voices
+```
 
 ## 開発
 

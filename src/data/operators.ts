@@ -1,27 +1,18 @@
 import type { Operator, OperatorClass, VoiceLine } from '../types/app'
+import { operatorVoiceRecords } from './operatorVoices'
 
 const audioRoot =
   'https://raw.githubusercontent.com/PseudoMon/arknights-audio/global-server-voices/voice_en'
 
-function voice(
-  operatorId: string,
-  folder: string,
-  fileCode: string,
-  label: string,
-  category: VoiceLine['category'],
-  english: string,
-  japanese: string,
-): VoiceLine {
-  return {
-    id: `${operatorId}-${fileCode.toLowerCase()}`,
-    operatorId,
-    fileCode,
-    label,
-    category,
-    english,
-    japanese,
-    audioUrl: `${audioRoot}/${folder}/${fileCode}.mp3`,
-  }
+function voicesFor(operatorId: string): VoiceLine[] {
+  return (operatorVoiceRecords[operatorId] ?? []).map(
+    ({ audioPath, ...record }) => ({
+      ...record,
+      id: `${operatorId}-${record.fileCode.toLowerCase()}`,
+      operatorId,
+      audioUrl: `${audioRoot}/${audioPath}`,
+    }),
+  )
 }
 
 export const operators: Operator[] = [
@@ -38,44 +29,7 @@ export const operators: Operator[] = [
     accent: '#48c7e8',
     description:
       'Rhodes Islandを率いる若きリーダー。穏やかな語り口の中に、強い決意が感じられます。',
-    voices: [
-      voice(
-        'amiya',
-        'char_002_amiya',
-        'CN_001',
-        'Appointed as Assistant',
-        'Talk',
-        'You work so hard, Doctor.',
-        '本当に働き者ですね、ドクター。',
-      ),
-      voice(
-        'amiya',
-        'char_002_amiya',
-        'CN_002',
-        'Talk 1',
-        'Talk',
-        "Dr. Kal'tsit told me you have to be 100% focused on your work to maximize efficiency. So... yes, that's what I'm gonna do!",
-        'ケルシー先生から、効率を最大限にするには仕事に全神経を集中させるべきだと教わりました。だから……はい、そうします！',
-      ),
-      voice(
-        'amiya',
-        'char_002_amiya',
-        'CN_017',
-        'Added to Squad',
-        'Battle',
-        'Got it.',
-        '了解しました。',
-      ),
-      voice(
-        'amiya',
-        'char_002_amiya',
-        'CN_042',
-        'Greeting',
-        'Greeting',
-        'Welcome home, Doctor!',
-        'おかえりなさい、ドクター！',
-      ),
-    ],
+    voices: voicesFor('amiya'),
   },
   {
     id: 'texas',
@@ -90,44 +44,7 @@ export const operators: Operator[] = [
     accent: '#7e9cff',
     description:
       '寡黙で冷静なPenguin Logisticsの運び屋。短い台詞のリズムが聞き取り練習に向いています。',
-    voices: [
-      voice(
-        'texas',
-        'char_102_texas',
-        'CN_001',
-        'Appointed as Assistant',
-        'Talk',
-        'My next mission is to protect you, Doctor.',
-        '次の任務はあなたの護衛です、ドクター。',
-      ),
-      voice(
-        'texas',
-        'char_102_texas',
-        'CN_002',
-        'Talk 1',
-        'Talk',
-        "I don't say much? That's because I'd rather avoid thinking about most things.",
-        '無口だって？ たいていのことは、考えないようにしているから。',
-      ),
-      voice(
-        'texas',
-        'char_102_texas',
-        'CN_017',
-        'Added to Squad',
-        'Battle',
-        'What do you need?',
-        '何が必要？',
-      ),
-      voice(
-        'texas',
-        'char_102_texas',
-        'CN_042',
-        'Greeting',
-        'Greeting',
-        'Morning.',
-        'おはよう。',
-      ),
-    ],
+    voices: voicesFor('texas'),
   },
   {
     id: 'exusiai',
@@ -141,8 +58,8 @@ export const operators: Operator[] = [
     initials: 'EX',
     accent: '#ff695f',
     description:
-      'いつも明るく、テンポの速い話し方が特徴の狙撃オペレーター。音声データは追加準備中です。',
-    voices: [],
+      'いつも明るく、テンポの速い話し方が特徴の狙撃オペレーター。日常会話から戦闘時の短い掛け声まで幅広く学べます。',
+    voices: voicesFor('exusiai'),
   },
   {
     id: 'silverash',
@@ -156,8 +73,8 @@ export const operators: Operator[] = [
     initials: 'SA',
     accent: '#b9c6d0',
     description:
-      'Karlan Tradeを率いるカリスマ。落ち着いた発音と長いセンテンスが特徴です。音声データは追加準備中です。',
-    voices: [],
+      'Karlan Tradeを率いるカリスマ。落ち着いた発音と長いセンテンスが特徴です。',
+    voices: voicesFor('silverash'),
   },
   {
     id: 'nearl',
@@ -171,8 +88,8 @@ export const operators: Operator[] = [
     initials: 'NR',
     accent: '#f4c45d',
     description:
-      '仲間を守ることを信条とする騎士。明瞭で力強い発音が特徴です。音声データは追加準備中です。',
-    voices: [],
+      '仲間を守ることを信条とする騎士。明瞭で力強い発音が特徴です。',
+    voices: voicesFor('nearl'),
   },
   {
     id: 'ptilopsis',
@@ -186,8 +103,8 @@ export const operators: Operator[] = [
     initials: 'PT',
     accent: '#8ce0c3',
     description:
-      '機械的で正確な話し方をする医療オペレーター。音声データは追加準備中です。',
-    voices: [],
+      '機械的で正確な話し方をする医療オペレーター。一定したテンポで細かな音を確認できます。',
+    voices: voicesFor('ptilopsis'),
   },
   {
     id: 'myrtle',
@@ -201,8 +118,8 @@ export const operators: Operator[] = [
     initials: 'MY',
     accent: '#ff9a63',
     description:
-      '元気いっぱいの旗手。日常会話に近い軽快な英語が特徴です。音声データは追加準備中です。',
-    voices: [],
+      '元気いっぱいの旗手。日常会話に近い軽快な英語が特徴です。',
+    voices: voicesFor('myrtle'),
   },
   {
     id: 'lappland',
@@ -216,8 +133,8 @@ export const operators: Operator[] = [
     initials: 'LP',
     accent: '#e1e4e8',
     description:
-      '予測できない言動と鋭い笑い声が印象的な前衛オペレーター。音声データは追加準備中です。',
-    voices: [],
+      '予測できない言動と鋭い笑い声が印象的な前衛オペレーター。感情の振れ幅が大きい英語を聞き取れます。',
+    voices: voicesFor('lappland'),
   },
 ]
 
