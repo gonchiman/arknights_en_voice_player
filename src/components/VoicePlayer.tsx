@@ -35,7 +35,6 @@ export function VoicePlayer({
     const audio = audioRef.current
     if (!audio) return
     audio.pause()
-    audio.load()
     setIsPlaying(false)
     setCurrentTime(0)
     setDuration(0)
@@ -79,7 +78,7 @@ export function VoicePlayer({
       <audio
         ref={audioRef}
         src={voice.audioUrl}
-        preload="metadata"
+        preload="none"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onEnded={() => setIsPlaying(false)}
