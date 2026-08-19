@@ -1,19 +1,19 @@
 :root {
-  --background: #0b0e10;
-  --background-raised: #101518;
-  --surface: #151b1f;
-  --surface-soft: #1a2125;
-  --surface-hover: #20282d;
-  --border: #2a3338;
-  --border-strong: #3c474d;
-  --text: #f3f5f6;
-  --text-soft: #c9d0d4;
-  --text-muted: #849097;
-  --accent: #f2c94c;
-  --accent-strong: #ffd75f;
-  --success: #65d7a5;
-  --danger: #ff6f6f;
-  --font-sans: Inter, "Noto Sans JP", "Segoe UI", sans-serif;
+  --background: #fff;
+  --background-raised: #fff;
+  --surface: #fff;
+  --surface-soft: #f7f7f7;
+  --surface-hover: #f3f3f3;
+  --border: #d6d6d6;
+  --border-strong: #aaa;
+  --text: #222;
+  --text-soft: #444;
+  --text-muted: #666;
+  --accent: #222;
+  --accent-strong: #000;
+  --success: #237a35;
+  --danger: #b42318;
+  --font-sans: "Yu Gothic", "YuGothic", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
   color: var(--text);
@@ -32,28 +32,14 @@
 html {
   min-width: 320px;
   min-height: 100%;
-  background: var(--background);
-  scroll-behavior: smooth;
+  background: #fff;
 }
 
 body {
   min-width: 320px;
   min-height: 100svh;
   margin: 0;
-  background:
-    radial-gradient(circle at 8% 4%, rgb(72 199 232 / 8%), transparent 27rem),
-    radial-gradient(circle at 90% 28%, rgb(242 201 76 / 5%), transparent 34rem),
-    var(--background);
-}
-
-body::before {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image: linear-gradient(rgb(255 255 255 / 2%) 1px, transparent 1px);
-  background-size: 100% 36px;
-  content: "";
-  pointer-events: none;
+  background: #fff;
 }
 
 button,
@@ -74,17 +60,17 @@ button:disabled {
 }
 
 a {
-  color: inherit;
+  color: #245ea8;
 }
 
 ::selection {
-  color: #111416;
-  background: var(--accent);
+  color: #fff;
+  background: #333;
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
+  outline: 2px solid #333;
+  outline-offset: 2px;
 }
 
 .sr-only {

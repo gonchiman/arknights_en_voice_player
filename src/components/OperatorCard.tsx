@@ -26,9 +26,6 @@ export function OperatorCard({ operator, selected = false, onSelect }: OperatorC
         onClick={onSelect}
         aria-label={`${operator.name}のボイスを表示`}
       >
-        <span className="operator-monogram" aria-hidden="true">
-          {operator.initials}
-        </span>
         <span className="operator-card-copy">
           <span className="operator-stars" aria-label={`${operator.rarity} stars`}>
             {'★'.repeat(operator.rarity)}

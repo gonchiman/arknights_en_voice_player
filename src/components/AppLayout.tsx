@@ -1,9 +1,9 @@
 import { NavLink, Outlet } from 'react-router-dom'
 
 const navigation = [
-  { to: '/', label: 'Library', caption: 'ボイス', end: true },
-  { to: '/favorites', label: 'Favorites', caption: 'お気に入り' },
-  { to: '/dictation', label: 'Dictation', caption: '学習' },
+  { to: '/', label: 'ボイス一覧', end: true },
+  { to: '/favorites', label: 'お気に入り' },
+  { to: '/dictation', label: 'ディクテーション' },
 ]
 
 export function AppLayout() {
@@ -11,15 +11,11 @@ export function AppLayout() {
     <div className="app-shell">
       <header className="app-header">
         <NavLink className="brand" to="/" aria-label="トップページへ移動">
-          <span className="brand-mark">R.I.</span>
-          <span>
-            <strong>VOICE RECORDS</strong>
-            <small>Arknights EN Listening Archive</small>
-          </span>
+          <strong>Arknights EN Voice Player</strong>
         </NavLink>
 
         <nav className="primary-nav" aria-label="メインメニュー">
-          {navigation.map(({ to, label, caption, end }) => (
+          {navigation.map(({ to, label, end }) => (
             <NavLink
               key={to}
               to={to}
@@ -29,7 +25,6 @@ export function AppLayout() {
               }
             >
               <span>{label}</span>
-              <small>{caption}</small>
             </NavLink>
           ))}
         </nav>
@@ -40,18 +35,13 @@ export function AppLayout() {
       </main>
 
       <footer className="app-footer">
-        <div>
-          <span>UNOFFICIAL FAN PROJECT</span>
-          <p>
-            音声の権利は各権利者に帰属します。学習・非商用目的のプロトタイプです。
-          </p>
-        </div>
+        <p>非公式ファンプロジェクト。音声の権利は各権利者に帰属します。</p>
         <a
           href="https://github.com/PseudoMon/arknights-audio"
           target="_blank"
           rel="noreferrer"
         >
-          Audio archive ↗
+          音声データ
         </a>
       </footer>
     </div>

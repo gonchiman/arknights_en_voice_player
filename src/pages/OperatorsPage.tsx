@@ -175,9 +175,6 @@ export function OperatorsPage() {
             style={{ '--operator-accent': selectedOperator.accent } as CSSProperties}
           >
             <div className="operator-detail-hero">
-              <div className="operator-detail-monogram" aria-hidden="true">
-                {selectedOperator.initials}
-              </div>
               <div>
                 <p className="operator-stars">{'★'.repeat(selectedOperator.rarity)}</p>
                 <h2>{selectedOperator.name}</h2>
@@ -214,11 +211,7 @@ export function OperatorsPage() {
               <p className="operator-description">{selectedOperator.description}</p>
 
               <div className="voice-section-heading">
-                <div>
-                  <p className="eyebrow">ENGLISH VOICE RECORDS</p>
-                  <h2>{selectedOperator.voices.length} records</h2>
-                </div>
-                <Icon name="headphones" size={24} />
+                <h2>ボイス {selectedOperator.voices.length}件</h2>
               </div>
 
               {selectedOperator.voices.length > 0 ? (
