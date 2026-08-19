@@ -819,30 +819,65 @@
   background: #eee;
 }
 
-.dictation-metrics {
-  height: 34px;
-  display: flex;
+.dictation-clear-progress {
+  width: 270px;
+  padding: 7px 10px 8px;
+  display: grid;
+  gap: 5px;
   border: 1px solid var(--border-strong);
 }
 
-.dictation-metrics span {
-  min-width: 74px;
-  padding: 3px 9px;
+.dictation-clear-progress-heading,
+.dictation-clear-progress-detail {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dictation-clear-progress-heading span {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.dictation-clear-progress-heading strong {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.dictation-clear-progress progress {
+  width: 100%;
+  height: 5px;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  accent-color: #222;
+}
+
+.dictation-clear-progress progress::-webkit-progress-bar {
+  background: #e5e5e5;
+}
+
+.dictation-clear-progress progress::-webkit-progress-value {
+  background: #222;
+}
+
+.dictation-clear-progress progress::-moz-progress-bar {
+  background: #222;
+}
+
+.dictation-clear-progress-detail {
   color: var(--text-muted);
   font-size: 9px;
 }
 
-.dictation-metrics span + span {
-  border-left: 1px solid var(--border);
-}
-
-.dictation-metrics strong {
+.dictation-clear-progress-detail strong {
   color: var(--text);
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .dictation-operator-step,
@@ -1397,12 +1432,8 @@
     flex: 1;
   }
 
-  .dictation-metrics {
+  .dictation-clear-progress {
     width: 100%;
-  }
-
-  .dictation-metrics span {
-    flex: 1;
   }
 
   .dictation-voice-filter,

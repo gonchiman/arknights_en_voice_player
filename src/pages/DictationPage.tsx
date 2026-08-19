@@ -53,9 +53,6 @@ export function DictationPage() {
   const currentVoice = selectedVoices.find((voice) => voice.id === currentVoiceId)
   const currentStep = currentVoice ? 3 : selectedOperator ? 2 : 1
 
-  const averageScore = attempts.length
-    ? Math.round(attempts.reduce((sum, attempt) => sum + attempt.score, 0) / attempts.length)
-    : 0
   const mastered = new Set(
     attempts
       .filter(
@@ -67,6 +64,10 @@ export function DictationPage() {
   const clearRate = dictationVoiceCount
     ? Math.round((mastered.size / dictationVoiceCount) * 100)
     : 0
+  const remainingVoiceCount = Math.max(
+    dictationVoiceCount - mastered.size,
+    0,
+  )
   const bestScoreByVoice = useMemo(() => {
     const scores = new Map<string, number>()
     for (const attempt of attempts) {
@@ -140,15 +141,23 @@ export function DictationPage() {
           })}
         </ol>
 
-        <div className="dictation-metrics" aria-label="学習状況">
-          <span><strong>{attempts.length}</strong> attempts</span>
-          <span><strong>{averageScore}%</strong> average</span>
-          <span><strong>{mastered.size}</strong> mastered</span>
-          <span
-            title={`${mastered.size} / ${dictationVoiceCount} voices cleared`}
-          >
-            <strong>{clearRate}%</strong> clear
-          </span>
+        <div
+          className="dictation-clear-progress"
+          aria-label={`クリア率 ${clearRate}%。${dictationVoiceCount}件中${mastered.size}件クリア、残り${remainingVoiceCount}件`}
+        >
+          <div className="dictation-clear-progress-heading">
+            <span>CLEAR RATE</span>
+            <strong>{clearRate}%</strong>
+          </div>
+          <progress max={dictationVoiceCount} value={mastered.size}>
+            {clearRate}%
+          </progress>
+          <div className="dictation-clear-progress-detail">
+            <span>
+              <strong>{mastered.size}</strong> / {dictationVoiceCount} voices
+            </span>
+            <span>残り {remainingVoiceCount}</span>
+          </div>
         </div>
       </section>
 
