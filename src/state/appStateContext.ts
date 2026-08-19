@@ -9,6 +9,10 @@ export type AppStateValue = {
   toggleVoiceFavorite: (voiceId: string) => void
   recordAttempt: (attempt: DictationAttempt) => void
   clearProgress: () => void
+  syncStatus: 'local' | 'syncing' | 'synced' | 'error'
+  syncError: string | null
+  lastSyncedAt: string | null
+  retrySync: () => void
 }
 
 export const AppStateContext = createContext<AppStateValue | null>(null)

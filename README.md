@@ -13,7 +13,8 @@
 - オペレーター・ボイスのお気に入り
 - テキストを隠したディクテーションと類似度採点
 - 回答回数、平均点、習得数、直近の学習履歴
-- `localStorage`によるお気に入り・学習進捗の保存
+- Googleログインによるお気に入り・学習進捗の端末間同期
+- 未ログイン・オフライン時の`localStorage`保存
 - デスクトップ、タブレット、スマートフォン対応
 
 ## 収録データ
@@ -41,6 +42,8 @@ npm install
 npm run dev
 ```
 
+Googleログインとクラウド同期を有効にする場合は、[ログイン・クラウド同期の設定](docs/AUTH_SETUP.md)を参照してください。Supabase未設定時もローカル保存のみで動作します。
+
 ## 品質チェック
 
 ```bash
@@ -55,6 +58,7 @@ npm run check
 - TypeScript
 - Vite
 - React Router（GitHub Pagesでも動作しやすいHash Router）
+- Supabase Auth・PostgreSQL・Row Level Security
 - CSSによるレスポンシブUI
 
 ## 注意

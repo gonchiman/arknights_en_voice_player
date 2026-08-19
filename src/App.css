@@ -29,6 +29,92 @@
   gap: 4px;
 }
 
+.app-header-actions,
+.account-control {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-header-actions {
+  justify-content: flex-end;
+}
+
+.account-loading,
+.account-user {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.account-user {
+  max-width: 160px;
+  overflow: hidden;
+  color: var(--text);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auth-button,
+.sync-indicator,
+.account-error {
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  color: var(--text);
+  font-size: 10px;
+}
+
+.auth-button:hover:not(:disabled),
+.sync-indicator:hover,
+.account-error:hover {
+  background: var(--surface-hover);
+}
+
+.auth-button:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.auth-button.secondary {
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+.sync-indicator {
+  min-height: 24px;
+  padding-inline: 6px;
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.sync-indicator.local,
+.sync-indicator.synced {
+  border-color: var(--border);
+}
+
+.sync-indicator.syncing {
+  border-color: #a57b36;
+  color: #765400;
+}
+
+.sync-indicator.error {
+  border-color: #9f3d46;
+  color: #9f3d46;
+  cursor: pointer;
+}
+
+.account-error {
+  max-width: 220px;
+  overflow: hidden;
+  border-color: #9f3d46;
+  color: #9f3d46;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .nav-link {
   min-height: 32px;
   padding: 5px 10px 3px;
@@ -1187,8 +1273,14 @@
   }
 
   .primary-nav {
-    width: 100%;
+    min-width: 0;
+    flex: 1;
     overflow-x: auto;
+  }
+
+  .app-header-actions {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .nav-link {
@@ -1340,6 +1432,24 @@
   .nav-link {
     padding-inline: 7px;
     font-size: 11px;
+  }
+
+  .app-header-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .primary-nav,
+  .account-control {
+    width: 100%;
+  }
+
+  .account-control {
+    justify-content: flex-end;
+  }
+
+  .account-user {
+    margin-right: auto;
   }
 
   .operator-list,

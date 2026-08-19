@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { AccountControl } from './AccountControl'
 
 const navigation = [
   { to: '/', label: 'ボイス一覧', end: true },
@@ -14,20 +15,23 @@ export function AppLayout() {
           <strong>Arknights EN Voice Player</strong>
         </NavLink>
 
-        <nav className="primary-nav" aria-label="メインメニュー">
-          {navigation.map(({ to, label, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                isActive ? 'nav-link active' : 'nav-link'
-              }
-            >
-              <span>{label}</span>
-            </NavLink>
-          ))}
-        </nav>
+        <div className="app-header-actions">
+          <nav className="primary-nav" aria-label="メインメニュー">
+            {navigation.map(({ to, label, end }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                className={({ isActive }) =>
+                  isActive ? 'nav-link active' : 'nav-link'
+                }
+              >
+                <span>{label}</span>
+              </NavLink>
+            ))}
+          </nav>
+          <AccountControl />
+        </div>
       </header>
 
       <main className="main-content">
