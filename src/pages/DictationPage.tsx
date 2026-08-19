@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { OperatorCard } from '../components/OperatorCard'
 import { OperatorFilterPanel } from '../components/OperatorFilterPanel'
@@ -50,7 +50,17 @@ export function DictationPage() {
     : 0
   const mastered = new Set(
     attempts.filter((attempt) => attempt.score >= 90).map((attempt) => attempt.voiceId),
-  ).size
+  )
+  const bestScoreByVoice = useMemo(() => {
+    const scores = new Map<string, number>()
+    for (const attempt of attempts) {
+      scores.set(
+        attempt.voiceId,
+        Math.max(scores.get(attempt.voiceId) ?? 0, attempt.score),
+      )
+    }
+    return scores
+  }, [attempts])
 
   const selectOperator = (operatorId: string) => {
     setSelectedOperatorId(operatorId)
@@ -117,7 +127,7 @@ export function DictationPage() {
         <div className="dictation-metrics" aria-label="学習状況">
           <span><strong>{attempts.length}</strong> attempts</span>
           <span><strong>{averageScore}%</strong> average</span>
-          <span><strong>{mastered}</strong> mastered</span>
+          <span><strong>{mastered.size}</strong> mastered</span>
         </div>
       </section>
 
@@ -147,6 +157,9 @@ export function DictationPage() {
                     key={operator.id}
                     operator={operator}
                     onSelect={() => selectOperator(operator.id)}
+                    clearedVoiceCount={operator.voices.filter(
+                      (voice) => voice.audioUrl !== null && mastered.has(voice.id),
+                    ).length}
                   />
                 ))}
               </div>
@@ -220,6 +233,14 @@ export function DictationPage() {
                   <span>
                     <strong>{voice.label}</strong>
                     <small>{voice.category}</small>
+                  </span>
+                  <span
+                    className={`dictation-voice-best-score${
+                      (bestScoreByVoice.get(voice.id) ?? 0) >= 90 ? ' mastered' : ''
+                    }`}
+                  >
+                    <small>BEST</small>
+                    <strong>{bestScoreByVoice.get(voice.id) ?? '—'}</strong>
                   </span>
                   <Icon name="arrow" size={17} />
                 </button>

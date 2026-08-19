@@ -839,7 +839,7 @@
   min-height: 58px;
   padding: 9px 12px;
   display: grid;
-  grid-template-columns: 60px minmax(0, 1fr) auto;
+  grid-template-columns: 60px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 10px;
   border: 0;
@@ -874,6 +874,29 @@
 .dictation-voice-option small {
   color: var(--text-muted);
   font-size: 9px;
+}
+
+.dictation-voice-best-score {
+  min-width: 38px;
+  display: grid;
+  justify-items: end;
+  gap: 1px;
+  color: var(--text-muted);
+}
+
+.dictation-voice-best-score small {
+  font-family: var(--font-mono);
+  font-size: 8px;
+}
+
+.dictation-voice-best-score strong {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.dictation-voice-best-score.mastered strong {
+  color: var(--success);
 }
 
 .dictation-voice-option > svg {

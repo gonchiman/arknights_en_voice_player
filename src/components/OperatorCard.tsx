@@ -8,9 +8,15 @@ type OperatorCardProps = {
   operator: Operator
   selected?: boolean
   onSelect?: () => void
+  clearedVoiceCount?: number
 }
 
-export function OperatorCard({ operator, selected = false, onSelect }: OperatorCardProps) {
+export function OperatorCard({
+  operator,
+  selected = false,
+  onSelect,
+  clearedVoiceCount,
+}: OperatorCardProps) {
   const { favoriteOperatorIds, toggleOperatorFavorite } = useAppState()
   const isFavorite = favoriteOperatorIds.includes(operator.id)
   const playableVoices = operator.voices.filter(
@@ -36,7 +42,9 @@ export function OperatorCard({ operator, selected = false, onSelect }: OperatorC
         <span className="operator-card-meta">
           <span>{classLabels[operator.operatorClass]}</span>
           <span>
-            {playableVoices === operator.voices.length
+            {clearedVoiceCount !== undefined
+              ? `クリア ${clearedVoiceCount} / ${playableVoices}`
+              : playableVoices === operator.voices.length
               ? `${playableVoices} voices`
               : `${playableVoices}/${operator.voices.length} voices`}
           </span>
