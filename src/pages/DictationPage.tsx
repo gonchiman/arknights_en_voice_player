@@ -16,6 +16,14 @@ type Result = {
 const dictationOperators = operators.filter((operator) =>
   operator.voices.some((voice) => voice.audioUrl !== null),
 )
+const dictationVoiceIds = new Set(
+  dictationOperators.flatMap((operator) =>
+    operator.voices
+      .filter((voice) => voice.audioUrl !== null)
+      .map((voice) => voice.id),
+  ),
+)
+const dictationVoiceCount = dictationVoiceIds.size
 
 export function DictationPage() {
   const { attempts, recordAttempt, clearProgress } = useAppState()
@@ -49,8 +57,16 @@ export function DictationPage() {
     ? Math.round(attempts.reduce((sum, attempt) => sum + attempt.score, 0) / attempts.length)
     : 0
   const mastered = new Set(
-    attempts.filter((attempt) => attempt.score >= 90).map((attempt) => attempt.voiceId),
+    attempts
+      .filter(
+        (attempt) =>
+          attempt.score >= 90 && dictationVoiceIds.has(attempt.voiceId),
+      )
+      .map((attempt) => attempt.voiceId),
   )
+  const clearRate = dictationVoiceCount
+    ? Math.round((mastered.size / dictationVoiceCount) * 100)
+    : 0
   const bestScoreByVoice = useMemo(() => {
     const scores = new Map<string, number>()
     for (const attempt of attempts) {
@@ -128,6 +144,11 @@ export function DictationPage() {
           <span><strong>{attempts.length}</strong> attempts</span>
           <span><strong>{averageScore}%</strong> average</span>
           <span><strong>{mastered.size}</strong> mastered</span>
+          <span
+            title={`${mastered.size} / ${dictationVoiceCount} voices cleared`}
+          >
+            <strong>{clearRate}%</strong> clear
+          </span>
         </div>
       </section>
 
