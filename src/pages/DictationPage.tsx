@@ -1,12 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Icon } from '../components/Icon'
+import { OperatorCard } from '../components/OperatorCard'
+import { OperatorFilterPanel } from '../components/OperatorFilterPanel'
 import { VoicePlayer } from '../components/VoicePlayer'
-import {
-  getOperator,
-  operators,
-  playableVoiceLines,
-  voiceLines,
-} from '../data/operators'
+import { getOperator, operators, voiceLines } from '../data/operators'
+import { useOperatorSearch } from '../hooks/useOperatorSearch'
 import { useAppState } from '../state/useAppState'
 import { answerScore } from '../utils/text'
 
@@ -15,26 +13,37 @@ type Result = {
   correct: boolean
 }
 
+const dictationOperators = operators.filter((operator) =>
+  operator.voices.some((voice) => voice.audioUrl !== null),
+)
+
 export function DictationPage() {
   const { attempts, recordAttempt, clearProgress } = useAppState()
-  const [operatorFilter, setOperatorFilter] = useState('all')
-  const [currentVoiceId, setCurrentVoiceId] = useState(
-    playableVoiceLines[0]?.id ?? '',
-  )
+  const operatorSearch = useOperatorSearch(dictationOperators)
+  const [selectedOperatorId, setSelectedOperatorId] = useState('')
+  const [currentVoiceId, setCurrentVoiceId] = useState('')
+  const [voiceQuery, setVoiceQuery] = useState('')
+  const [voiceCategory, setVoiceCategory] = useState('all')
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState<Result | null>(null)
 
-  const pool = useMemo(
-    () =>
-      operatorFilter === 'all'
-        ? playableVoiceLines
-        : playableVoiceLines.filter(
-            (line) => line.operatorId === operatorFilter,
-          ),
-    [operatorFilter],
+  const selectedOperator = dictationOperators.find(
+    (operator) => operator.id === selectedOperatorId,
   )
-  const currentVoice = pool.find((line) => line.id === currentVoiceId) ?? pool[0]
-  const currentOperator = currentVoice ? getOperator(currentVoice.operatorId) : undefined
+  const selectedVoices =
+    selectedOperator?.voices.filter((voice) => voice.audioUrl !== null) ?? []
+  const normalizedVoiceQuery = voiceQuery.trim().toLocaleLowerCase()
+  const filteredVoices = selectedVoices.filter(
+    (voice) =>
+      (!normalizedVoiceQuery ||
+        [voice.label, voice.fileCode, voice.category]
+          .join(' ')
+          .toLocaleLowerCase()
+          .includes(normalizedVoiceQuery)) &&
+      (voiceCategory === 'all' || voice.category === voiceCategory),
+  )
+  const currentVoice = selectedVoices.find((voice) => voice.id === currentVoiceId)
+  const currentStep = currentVoice ? 3 : selectedOperator ? 2 : 1
 
   const averageScore = attempts.length
     ? Math.round(attempts.reduce((sum, attempt) => sum + attempt.score, 0) / attempts.length)
@@ -43,23 +52,30 @@ export function DictationPage() {
     attempts.filter((attempt) => attempt.score >= 90).map((attempt) => attempt.voiceId),
   ).size
 
-  const chooseNext = () => {
-    if (pool.length === 0) return
-    const alternatives = pool.filter((line) => line.id !== currentVoice?.id)
-    const choices = alternatives.length > 0 ? alternatives : pool
-    const next = choices[Math.floor(Math.random() * choices.length)]
-    setCurrentVoiceId(next.id)
+  const selectOperator = (operatorId: string) => {
+    setSelectedOperatorId(operatorId)
+    setCurrentVoiceId('')
+    setVoiceQuery('')
+    setVoiceCategory('all')
     setAnswer('')
     setResult(null)
   }
 
-  const changeOperator = (operatorId: string) => {
-    setOperatorFilter(operatorId)
-    const nextPool =
-      operatorId === 'all'
-        ? playableVoiceLines
-        : playableVoiceLines.filter((line) => line.operatorId === operatorId)
-    setCurrentVoiceId(nextPool[0]?.id ?? '')
+  const selectVoice = (voiceId: string) => {
+    setCurrentVoiceId(voiceId)
+    setAnswer('')
+    setResult(null)
+  }
+
+  const returnToOperators = () => {
+    setSelectedOperatorId('')
+    setCurrentVoiceId('')
+    setAnswer('')
+    setResult(null)
+  }
+
+  const returnToVoiceSelection = () => {
+    setCurrentVoiceId('')
     setAnswer('')
     setResult(null)
   }
@@ -81,41 +97,171 @@ export function DictationPage() {
   return (
     <>
       <section className="dictation-toolbar">
-        <label>
-          <span>VOICE SET</span>
-          <select value={operatorFilter} onChange={(event) => changeOperator(event.target.value)}>
-            <option value="all">All available operators</option>
-            {operators
-              .filter((operator) =>
-                operator.voices.some((voice) => voice.audioUrl !== null),
-              )
-              .map((operator) => (
-                <option key={operator.id} value={operator.id}>
-                  {operator.name} / {operator.japaneseName}
-                </option>
-              ))}
-          </select>
-        </label>
+        <ol className="dictation-steps" aria-label="ディクテーションの手順">
+          {['オペレーター', 'ボイス', '回答'].map((label, index) => {
+            const step = index + 1
+            const state = step === currentStep ? ' current' : step < currentStep ? ' complete' : ''
+            return (
+              <li
+                key={label}
+                className={state}
+                aria-current={step === currentStep ? 'step' : undefined}
+              >
+                <span>{step}</span>
+                {label}
+              </li>
+            )
+          })}
+        </ol>
+
         <div className="dictation-metrics" aria-label="学習状況">
           <span><strong>{attempts.length}</strong> attempts</span>
           <span><strong>{averageScore}%</strong> average</span>
           <span><strong>{mastered}</strong> mastered</span>
         </div>
-        <button type="button" className="quiet-button" onClick={chooseNext}>
-          <Icon name="shuffle" size={17} />
-          Random voice
-        </button>
       </section>
 
-      {currentVoice && currentOperator ? (
+      {!selectedOperator && (
+        <div className="dictation-operator-step">
+          <OperatorFilterPanel search={operatorSearch} />
+
+          <section className="dictation-selection-panel" aria-label="オペレーター選択">
+            <div className="section-heading">
+              <h2>
+                {operatorSearch.filteredOperators.length} / {dictationOperators.length}{' '}
+                オペレーター
+              </h2>
+              <button
+                type="button"
+                className="quiet-button"
+                onClick={operatorSearch.resetFilters}
+              >
+                条件をリセット
+              </button>
+            </div>
+
+            {operatorSearch.filteredOperators.length > 0 ? (
+              <div className="operator-list dictation-operator-list">
+                {operatorSearch.filteredOperators.map((operator) => (
+                  <OperatorCard
+                    key={operator.id}
+                    operator={operator}
+                    onSelect={() => selectOperator(operator.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="no-results">
+                <span>NO MATCH</span>
+                <h2>条件に合うオペレーターがいません。</h2>
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={operatorSearch.resetFilters}
+                >
+                  条件をリセット
+                </button>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {selectedOperator && !currentVoice && (
+        <section className="dictation-voice-selection" aria-label="ボイス選択">
+          <div className="dictation-selection-header">
+            <button type="button" className="quiet-button" onClick={returnToOperators}>
+              <span aria-hidden="true">←</span>
+              オペレーター選択
+            </button>
+            <div>
+              <strong>{selectedOperator.name}</strong>
+              <span>{selectedVoices.length} voices</span>
+            </div>
+          </div>
+
+          <div className="dictation-voice-filter">
+            <label className="search-field">
+              <span className="sr-only">ボイス名・コードで検索</span>
+              <Icon name="search" size={19} />
+              <input
+                type="search"
+                value={voiceQuery}
+                onChange={(event) => setVoiceQuery(event.target.value)}
+                placeholder="Search voice label or code..."
+              />
+            </label>
+            <label>
+              <span>Category</span>
+              <select
+                value={voiceCategory}
+                onChange={(event) => setVoiceCategory(event.target.value)}
+              >
+                <option value="all">All categories</option>
+                <option value="Talk">Talk</option>
+                <option value="Battle">Battle</option>
+                <option value="Greeting">Greeting</option>
+              </select>
+            </label>
+          </div>
+
+          {filteredVoices.length > 0 ? (
+            <div className="dictation-voice-options">
+              {filteredVoices.map((voice) => (
+                <button
+                  key={voice.id}
+                  type="button"
+                  className="dictation-voice-option"
+                  onClick={() => selectVoice(voice.id)}
+                >
+                  <span className="voice-code">
+                    {voice.fileCode.replace('CN_', 'EN / ')}
+                  </span>
+                  <span>
+                    <strong>{voice.label}</strong>
+                    <small>{voice.category}</small>
+                  </span>
+                  <Icon name="arrow" size={17} />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="no-results dictation-voice-no-results">
+              <span>NO MATCH</span>
+              <h2>条件に合うボイスがありません。</h2>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => {
+                  setVoiceQuery('')
+                  setVoiceCategory('all')
+                }}
+              >
+                条件をリセット
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
+      {currentVoice && selectedOperator && (
         <section className="dictation-workspace">
+          <button
+            type="button"
+            className="quiet-button dictation-back-button"
+            onClick={returnToVoiceSelection}
+          >
+            <span aria-hidden="true">←</span>
+            ボイス選択
+          </button>
+
           <div className="exercise-operator">
-            <span style={{ backgroundColor: currentOperator.accent }}>
-              {currentOperator.initials}
+            <span style={{ backgroundColor: selectedOperator.accent }}>
+              {selectedOperator.initials}
             </span>
             <div>
               <p className="eyebrow">CURRENT SPEAKER</p>
-              <h2>{currentOperator.name}</h2>
+              <h2>{selectedOperator.name}</h2>
               <p>{currentVoice.category} · {currentVoice.label}</p>
             </div>
           </div>
@@ -151,8 +297,12 @@ export function DictationPage() {
                 Check answer
               </button>
             ) : (
-              <button type="button" className="primary-button" onClick={chooseNext}>
-                Next voice
+              <button
+                type="button"
+                className="primary-button"
+                onClick={returnToVoiceSelection}
+              >
+                別のボイスを選ぶ
                 <Icon name="arrow" size={18} />
               </button>
             )}
@@ -182,8 +332,6 @@ export function DictationPage() {
             </div>
           )}
         </section>
-      ) : (
-        <p className="muted-block">この条件で学習できる音声がありません。</p>
       )}
 
       {attempts.length > 0 && (
