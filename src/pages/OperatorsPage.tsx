@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { Icon } from '../components/Icon'
@@ -22,6 +22,7 @@ const subclassOptions = Array.from(
 ).sort()
 
 export function OperatorsPage() {
+  const operatorDetailRef = useRef<HTMLElement>(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const [query, setQuery] = useState('')
   const [rarity, setRarity] = useState('all')
@@ -59,12 +60,24 @@ export function OperatorsPage() {
     filteredOperators.find((operator) => operator.id === requestedOperator) ??
     filteredOperators[0]
 
+  useEffect(() => {
+    if (requestedOperator) {
+      operatorDetailRef.current?.scrollTo({ top: 0 })
+    }
+  }, [requestedOperator])
+
   const resetFilters = () => {
     setQuery('')
     setRarity('all')
     setOperatorClass('all')
     setSubclass('all')
     setInitial('all')
+  }
+
+  const closeOperatorDetail = () => {
+    const nextSearchParams = new URLSearchParams(searchParams)
+    nextSearchParams.delete('operator')
+    setSearchParams(nextSearchParams, { replace: true })
   }
 
   return (
@@ -132,7 +145,9 @@ export function OperatorsPage() {
         </div>
       </section>
 
-      <section className="catalog-layout">
+      <section
+        className={`catalog-layout${requestedOperator ? ' mobile-detail-active' : ''}`}
+      >
         <div className="catalog-column">
           <div className="section-heading">
             <div>
@@ -171,9 +186,23 @@ export function OperatorsPage() {
 
         {selectedOperator && (
           <aside
-            className="operator-detail"
+            ref={operatorDetailRef}
+            className={`operator-detail${requestedOperator ? ' mobile-detail-open' : ''}`}
+            aria-label={`${selectedOperator.name}のボイス詳細`}
             style={{ '--operator-accent': selectedOperator.accent } as CSSProperties}
           >
+            <div className="mobile-detail-toolbar">
+              <button
+                type="button"
+                className="mobile-detail-back"
+                onClick={closeOperatorDetail}
+              >
+                <span aria-hidden="true">←</span>
+                オペレーター一覧
+              </button>
+              <span>ボイス詳細</span>
+            </div>
+
             <div className="operator-detail-hero">
               <div>
                 <p className="operator-stars">{'★'.repeat(selectedOperator.rarity)}</p>
