@@ -1,34 +1,11 @@
-import type { DictationAttempt } from '../types/app'
 import { supabase } from './supabase'
+import {
+  mergeSnapshots,
+  type CloudOperation,
+  type UserDataSnapshot,
+} from './stateMerge'
 
-export type UserDataSnapshot = {
-  favoriteOperatorIds: string[]
-  favoriteVoiceIds: string[]
-  attempts: DictationAttempt[]
-}
-
-export type CloudOperation =
-  | {
-      id: string
-      type: 'set_operator_favorite'
-      itemId: string
-      enabled: boolean
-    }
-  | {
-      id: string
-      type: 'set_voice_favorite'
-      itemId: string
-      enabled: boolean
-    }
-  | {
-      id: string
-      type: 'add_attempt'
-      attempt: DictationAttempt
-    }
-  | {
-      id: string
-      type: 'clear_attempts'
-    }
+export type { CloudOperation, UserDataSnapshot } from './stateMerge'
 
 function client() {
   if (!supabase) throw new Error('Supabase is not configured.')
@@ -37,30 +14,6 @@ function client() {
 
 function throwIfError(error: { message: string } | null) {
   if (error) throw new Error(error.message)
-}
-
-function mergeIds(...collections: string[][]) {
-  return Array.from(new Set(collections.flat()))
-}
-
-function mergeAttempts(...collections: DictationAttempt[][]) {
-  const attempts = new Map<string, DictationAttempt>()
-  for (const attempt of collections.flat()) attempts.set(attempt.id, attempt)
-  return Array.from(attempts.values())
-    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
-    .slice(0, 200)
-}
-
-export function mergeSnapshots(...snapshots: UserDataSnapshot[]): UserDataSnapshot {
-  return {
-    favoriteOperatorIds: mergeIds(
-      ...snapshots.map((snapshot) => snapshot.favoriteOperatorIds),
-    ),
-    favoriteVoiceIds: mergeIds(
-      ...snapshots.map((snapshot) => snapshot.favoriteVoiceIds),
-    ),
-    attempts: mergeAttempts(...snapshots.map((snapshot) => snapshot.attempts)),
-  }
 }
 
 export async function loadCloudState(userId: string): Promise<UserDataSnapshot> {

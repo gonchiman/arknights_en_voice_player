@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "check": "npm run lint && npm run build",
+    "check": "npm run lint && npm run test:sync && npm run build",
+    "test:sync": "node --test tests/stateMerge.test.mjs",
     "generate:voices": "node scripts/generate-voice-data.mjs",
     "validate:voices": "node scripts/validate-voice-data.mjs",
     "preview": "vite preview"

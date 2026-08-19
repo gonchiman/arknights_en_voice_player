@@ -50,7 +50,7 @@ Googleログインとクラウド同期を有効にする場合は、[ログイ�
 npm run check
 ```
 
-上記コマンドでOxlint、TypeScript、Viteの本番ビルドをまとめて実行します。
+上記コマンドでOxlint、クラウド同期ロジックの自動テスト、TypeScript、Viteの本番ビルドをまとめて実行します。
 
 ## 技術構成
 

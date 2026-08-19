@@ -10,77 +10,25 @@ import {
   applyCloudOperation,
   loadCloudState,
   mergeIntoCloud,
-  mergeSnapshots,
   type CloudOperation,
   type UserDataSnapshot,
 } from '../lib/cloudState'
+import {
+  clearSnapshot,
+  guestStoragePrefix,
+  readSnapshot,
+  userStoragePrefix,
+  writeSnapshot,
+} from '../lib/localStateStorage'
+import {
+  appendPendingOperation,
+  flushPendingOperationsQueue,
+  readPendingOperations,
+} from '../lib/pendingOperations'
+import { applyOperationsToSnapshot, mergeSnapshots } from '../lib/stateMerge'
 import type { DictationAttempt } from '../types/app'
 import { AppStateContext, type AppStateValue } from './appStateContext'
 import { useAuth } from './useAuth'
-
-const guestStoragePrefix = 'akvp'
-
-function readStored<T>(key: string, fallback: T): T {
-  try {
-    const stored = window.localStorage.getItem(key)
-    return stored ? (JSON.parse(stored) as T) : fallback
-  } catch {
-    return fallback
-  }
-}
-
-function storageKeys(prefix: string) {
-  return {
-    favoriteOperators: `${prefix}.favoriteOperators`,
-    favoriteVoices: `${prefix}.favoriteVoices`,
-    attempts: `${prefix}.dictationAttempts`,
-  }
-}
-
-function userStoragePrefix(userId: string) {
-  return `akvp.user.${userId}`
-}
-
-function readSnapshot(prefix: string): UserDataSnapshot {
-  const keys = storageKeys(prefix)
-  return {
-    favoriteOperatorIds: readStored<string[]>(keys.favoriteOperators, []),
-    favoriteVoiceIds: readStored<string[]>(keys.favoriteVoices, []),
-    attempts: readStored<DictationAttempt[]>(keys.attempts, []),
-  }
-}
-
-function writeSnapshot(prefix: string, snapshot: UserDataSnapshot) {
-  const keys = storageKeys(prefix)
-  window.localStorage.setItem(
-    keys.favoriteOperators,
-    JSON.stringify(snapshot.favoriteOperatorIds),
-  )
-  window.localStorage.setItem(
-    keys.favoriteVoices,
-    JSON.stringify(snapshot.favoriteVoiceIds),
-  )
-  window.localStorage.setItem(keys.attempts, JSON.stringify(snapshot.attempts))
-}
-
-function clearSnapshot(prefix: string) {
-  const keys = storageKeys(prefix)
-  window.localStorage.removeItem(keys.favoriteOperators)
-  window.localStorage.removeItem(keys.favoriteVoices)
-  window.localStorage.removeItem(keys.attempts)
-}
-
-function pendingOperationsKey(userId: string) {
-  return `akvp.user.${userId}.pendingOperations`
-}
-
-function readPendingOperations(userId: string) {
-  return readStored<CloudOperation[]>(pendingOperationsKey(userId), [])
-}
-
-function writePendingOperations(userId: string, operations: CloudOperation[]) {
-  window.localStorage.setItem(pendingOperationsKey(userId), JSON.stringify(operations))
-}
 
 function operationId() {
   return typeof crypto.randomUUID === 'function'
@@ -98,7 +46,10 @@ function errorMessage(error: unknown) {
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const { user, isLoading: isAuthLoading } = useAuth()
-  const initialSnapshot = useMemo(() => readSnapshot(guestStoragePrefix), [])
+  const initialSnapshot = useMemo(
+    () => readSnapshot(window.localStorage, guestStoragePrefix),
+    [],
+  )
   const [favoriteOperatorIds, setFavoriteOperatorIds] = useState(
     initialSnapshot.favoriteOperatorIds,
   )
@@ -115,30 +66,24 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const sessionVersionRef = useRef(0)
   const syncChainRef = useRef<Promise<void>>(Promise.resolve())
   const latestTaskRef = useRef(0)
-  const localRevisionRef = useRef(0)
   userIdRef.current = user?.id ?? null
 
   const setSnapshot = useCallback((snapshot: UserDataSnapshot, prefix: string) => {
     activeStoragePrefixRef.current = prefix
     currentSnapshotRef.current = snapshot
-    writeSnapshot(prefix, snapshot)
+    writeSnapshot(window.localStorage, prefix, snapshot)
     setFavoriteOperatorIds(snapshot.favoriteOperatorIds)
     setFavoriteVoiceIds(snapshot.favoriteVoiceIds)
     setAttempts(snapshot.attempts)
   }, [])
 
   const flushPendingOperations = useCallback(async (userId: string) => {
-    while (userIdRef.current === userId) {
-      const operations = readPendingOperations(userId)
-      const operation = operations[0]
-      if (!operation) return
-      await applyCloudOperation(userId, operation)
-      const latestOperations = readPendingOperations(userId)
-      writePendingOperations(
-        userId,
-        latestOperations.filter((item) => item.id !== operation.id),
-      )
-    }
+    await flushPendingOperationsQueue(
+      window.localStorage,
+      userId,
+      (operation) => applyCloudOperation(userId, operation),
+      () => userIdRef.current === userId,
+    )
   }, [])
 
   const runCloudTask = useCallback(
@@ -176,10 +121,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     (operation: CloudOperation) => {
       const userId = userIdRef.current
       if (!userId) return
-      writePendingOperations(userId, [
-        ...readPendingOperations(userId),
-        operation,
-      ])
+      appendPendingOperation(window.localStorage, userId, operation)
       void runCloudTask(userId, () => flushPendingOperations(userId))
     },
     [flushPendingOperations, runCloudTask],
@@ -192,7 +134,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     if (isAuthLoading) return
 
     if (!user) {
-      setSnapshot(readSnapshot(guestStoragePrefix), guestStoragePrefix)
+      setSnapshot(
+        readSnapshot(window.localStorage, guestStoragePrefix),
+        guestStoragePrefix,
+      )
       setSyncStatus('local')
       setSyncError(null)
       setLastSyncedAt(null)
@@ -201,10 +146,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
     const userId = user.id
     const prefix = userStoragePrefix(userId)
-    const guestState = readSnapshot(guestStoragePrefix)
-    const cachedUserState = readSnapshot(prefix)
+    const guestState = readSnapshot(window.localStorage, guestStoragePrefix)
+    const cachedUserState = readSnapshot(window.localStorage, prefix)
     const visibleState = mergeSnapshots(cachedUserState, guestState)
-    const revisionAtStart = localRevisionRef.current
     setSnapshot(visibleState, prefix)
 
     void runCloudTask(userId, async () => {
@@ -218,19 +162,18 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      const finalState =
-        localRevisionRef.current === revisionAtStart
-          ? cloudState
-          : mergeSnapshots(cloudState, currentSnapshotRef.current)
+      const finalState = applyOperationsToSnapshot(
+        cloudState,
+        readPendingOperations(window.localStorage, userId),
+      )
       setSnapshot(finalState, prefix)
-      clearSnapshot(guestStoragePrefix)
+      clearSnapshot(window.localStorage, guestStoragePrefix)
     })
   }, [flushPendingOperations, isAuthLoading, runCloudTask, setSnapshot, user])
 
   const commitSnapshot = useCallback((snapshot: UserDataSnapshot) => {
-    localRevisionRef.current += 1
     currentSnapshotRef.current = snapshot
-    writeSnapshot(activeStoragePrefixRef.current, snapshot)
+    writeSnapshot(window.localStorage, activeStoragePrefixRef.current, snapshot)
     setFavoriteOperatorIds(snapshot.favoriteOperatorIds)
     setFavoriteVoiceIds(snapshot.favoriteVoiceIds)
     setAttempts(snapshot.attempts)
@@ -238,10 +181,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const toggleOperatorFavorite = useCallback(
     (operatorId: string) => {
-      const enabled = !favoriteOperatorIds.includes(operatorId)
+      const currentIds = currentSnapshotRef.current.favoriteOperatorIds
+      const enabled = !currentIds.includes(operatorId)
       commitSnapshot({
         ...currentSnapshotRef.current,
-        favoriteOperatorIds: toggleId(favoriteOperatorIds, operatorId),
+        favoriteOperatorIds: toggleId(currentIds, operatorId),
       })
       enqueueOperation({
         id: operationId(),
@@ -250,15 +194,16 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         enabled,
       })
     },
-    [commitSnapshot, enqueueOperation, favoriteOperatorIds],
+    [commitSnapshot, enqueueOperation],
   )
 
   const toggleVoiceFavorite = useCallback(
     (voiceId: string) => {
-      const enabled = !favoriteVoiceIds.includes(voiceId)
+      const currentIds = currentSnapshotRef.current.favoriteVoiceIds
+      const enabled = !currentIds.includes(voiceId)
       commitSnapshot({
         ...currentSnapshotRef.current,
-        favoriteVoiceIds: toggleId(favoriteVoiceIds, voiceId),
+        favoriteVoiceIds: toggleId(currentIds, voiceId),
       })
       enqueueOperation({
         id: operationId(),
@@ -267,18 +212,18 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         enabled,
       })
     },
-    [commitSnapshot, enqueueOperation, favoriteVoiceIds],
+    [commitSnapshot, enqueueOperation],
   )
 
   const recordAttempt = useCallback(
     (attempt: DictationAttempt) => {
       commitSnapshot({
         ...currentSnapshotRef.current,
-        attempts: [attempt, ...attempts].slice(0, 200),
+        attempts: [attempt, ...currentSnapshotRef.current.attempts].slice(0, 200),
       })
       enqueueOperation({ id: operationId(), type: 'add_attempt', attempt })
     },
-    [attempts, commitSnapshot, enqueueOperation],
+    [commitSnapshot, enqueueOperation],
   )
 
   const clearProgress = useCallback(() => {
@@ -290,14 +235,13 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const userId = userIdRef.current
     if (!userId) return
     const prefix = userStoragePrefix(userId)
-    const revisionAtStart = localRevisionRef.current
     void runCloudTask(userId, async () => {
       await flushPendingOperations(userId)
       const cloudState = await loadCloudState(userId)
-      const finalState =
-        localRevisionRef.current === revisionAtStart
-          ? cloudState
-          : mergeSnapshots(cloudState, currentSnapshotRef.current)
+      const finalState = applyOperationsToSnapshot(
+        cloudState,
+        readPendingOperations(window.localStorage, userId),
+      )
       setSnapshot(finalState, prefix)
     })
   }, [flushPendingOperations, runCloudTask, setSnapshot])
