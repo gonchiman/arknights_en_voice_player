@@ -2,7 +2,7 @@ import { classLabels, operatorClasses } from '../data/operators'
 import type { OperatorSearchController } from '../hooks/useOperatorSearch'
 import { Icon } from './Icon'
 
-const rarityOptions = [4, 5, 6] as const
+const rarityOptions = [1, 2, 3, 4, 5, 6] as const
 
 type OperatorFilterPanelProps = {
   search: OperatorSearchController

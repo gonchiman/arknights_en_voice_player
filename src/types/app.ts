@@ -5,6 +5,10 @@ export type OperatorClass =
   | 'Sniper'
   | 'Caster'
   | 'Medic'
+  | 'Supporter'
+  | 'Specialist'
+
+export type OperatorRarity = 1 | 2 | 3 | 4 | 5 | 6
 
 export type VoiceLine = {
   id: string
@@ -19,9 +23,10 @@ export type VoiceLine = {
 
 export type Operator = {
   id: string
+  charId: string
   name: string
   japaneseName: string
-  rarity: 4 | 5 | 6
+  rarity: OperatorRarity
   operatorClass: OperatorClass
   subclass: string
   faction: string
@@ -31,6 +36,8 @@ export type Operator = {
   description: string
   voices: VoiceLine[]
 }
+
+export type OperatorCatalogRecord = Omit<Operator, 'voices'>
 
 export type DictationAttempt = {
   id: string
