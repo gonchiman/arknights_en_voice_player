@@ -171,13 +171,6 @@ export function DictationPage() {
                 {operatorSearch.filteredOperators.length} / {dictationOperators.length}{' '}
                 オペレーター
               </h2>
-              <button
-                type="button"
-                className="quiet-button"
-                onClick={operatorSearch.resetFilters}
-              >
-                条件をリセット
-              </button>
             </div>
 
             {operatorSearch.filteredOperators.length > 0 ? (

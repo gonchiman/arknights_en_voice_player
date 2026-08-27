@@ -48,9 +48,6 @@ export function OperatorsPage() {
                 {playableVoiceLines.length} playable / {voiceLines.length} records
               </h2>
             </div>
-            <button type="button" className="quiet-button" onClick={resetFilters}>
-              Reset filters
-            </button>
           </div>
 
           {filteredOperators.length > 0 ? (

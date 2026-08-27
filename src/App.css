@@ -154,9 +154,106 @@
 
 .filter-panel {
   display: grid;
-  grid-template-columns: minmax(250px, 1.2fr) minmax(0, 2fr);
-  align-items: end;
-  gap: 8px;
+  gap: 0;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 0;
+  background: #fff;
+}
+
+.filter-panel-heading {
+  min-height: 38px;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #f7f7f7;
+  color: var(--text);
+  font-size: 11px;
+}
+
+.filter-reset-button {
+  padding: 6px 4px;
+  border: 0;
+  background: transparent;
+  color: #555;
+  font-size: 11px;
+}
+
+.filter-reset-button:hover:not(:disabled) {
+  color: #111;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.filter-reset-button:disabled {
+  color: #aaa;
+  cursor: default;
+}
+
+.filter-option-row {
+  min-width: 0;
+  min-height: 40px;
+  padding: 7px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  border-top: 1px solid var(--border);
+}
+
+.filter-option-label {
+  flex: 0 0 60px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.filter-chip {
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 0;
+  background: #fff;
+  color: #444;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.filter-chip:hover:not(.active) {
+  border-color: #333;
+  background: var(--surface-hover);
+  color: #222;
+}
+
+.filter-chip.active {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+  font-weight: 700;
+}
+
+.filter-search-row {
+  padding: 8px 10px 10px;
+  display: block;
+  border-top: 1px solid var(--border);
+}
+
+.operator-search-input {
+  width: 100%;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 0;
+  outline: none;
+  background: #fff;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.operator-search-input::placeholder {
+  color: #777;
 }
 
 .search-field {
@@ -222,6 +319,7 @@
 }
 
 .search-field:focus-within,
+.operator-search-input:focus,
 .filter-selects select:focus,
 .dictation-toolbar select:focus,
 .dictation-voice-filter select:focus,
@@ -1489,6 +1587,10 @@
 
   .account-user {
     margin-right: auto;
+  }
+
+  .filter-option-label {
+    flex-basis: 100%;
   }
 
   .operator-list,

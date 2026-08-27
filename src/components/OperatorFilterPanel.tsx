@@ -1,8 +1,24 @@
 import { classLabels, operatorClasses } from '../data/operators'
 import type { OperatorSearchController } from '../hooks/useOperatorSearch'
-import { Icon } from './Icon'
 
-const rarityOptions = [1, 2, 3, 4, 5, 6] as const
+const rarityOptions = [6, 5, 4, 3, 2, 1] as const
+
+const initialOptions = [
+  { value: 'all', label: 'すべて' },
+  { value: 'a', label: 'あ行' },
+  { value: 'ka', label: 'か行' },
+  { value: 'sa', label: 'さ行' },
+  { value: 'ta', label: 'た行' },
+  { value: 'na', label: 'な行' },
+  { value: 'ha', label: 'は行' },
+  { value: 'ma', label: 'ま行' },
+  { value: 'ya', label: 'や行' },
+  { value: 'ra', label: 'ら行' },
+  { value: 'wa', label: 'わ行' },
+  { value: 'latin', label: 'A–Z' },
+  { value: 'numeric', label: '0–9' },
+  { value: 'other', label: 'その他' },
+] as const
 
 type OperatorFilterPanelProps = {
   search: OperatorSearchController
@@ -11,75 +27,90 @@ type OperatorFilterPanelProps = {
 export function OperatorFilterPanel({ search }: OperatorFilterPanelProps) {
   return (
     <section className="filter-panel" aria-label="オペレーター検索条件">
-      <label className="search-field">
-        <span className="sr-only">名前・陣営・職業で検索</span>
-        <Icon name="search" size={19} />
+      <div className="filter-panel-heading">
+        <span>検索条件</span>
+        <button
+          type="button"
+          className="filter-reset-button"
+          disabled={!search.hasActiveFilters}
+          onClick={search.resetFilters}
+        >
+          条件をリセット
+        </button>
+      </div>
+
+      <div className="filter-option-row" role="group" aria-label="オペレーター名の頭文字">
+        <span className="filter-option-label">頭文字</span>
+        {initialOptions.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={`filter-chip${search.initial === option.value ? ' active' : ''}`}
+            aria-pressed={search.initial === option.value}
+            onClick={() => search.setInitial(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="filter-option-row" role="group" aria-label="職業">
+        <span className="filter-option-label">職業</span>
+        <button
+          type="button"
+          className={`filter-chip${search.operatorClass === 'all' ? ' active' : ''}`}
+          aria-pressed={search.operatorClass === 'all'}
+          onClick={() => search.setOperatorClass('all')}
+        >
+          すべて
+        </button>
+        {operatorClasses.map((value) => (
+          <button
+            key={value}
+            type="button"
+            className={`filter-chip${search.operatorClass === value ? ' active' : ''}`}
+            aria-pressed={search.operatorClass === value}
+            title={`${classLabels[value]} / ${value}`}
+            onClick={() => search.setOperatorClass(value)}
+          >
+            {classLabels[value]}
+          </button>
+        ))}
+      </div>
+
+      <div className="filter-option-row" role="group" aria-label="レアリティ">
+        <span className="filter-option-label">レアリティ</span>
+        <button
+          type="button"
+          className={`filter-chip${search.rarity === 'all' ? ' active' : ''}`}
+          aria-pressed={search.rarity === 'all'}
+          onClick={() => search.setRarity('all')}
+        >
+          すべて
+        </button>
+        {rarityOptions.map((value) => (
+          <button
+            key={value}
+            type="button"
+            className={`filter-chip${search.rarity === String(value) ? ' active' : ''}`}
+            aria-pressed={search.rarity === String(value)}
+            onClick={() => search.setRarity(String(value))}
+          >
+            ★{value}
+          </button>
+        ))}
+      </div>
+
+      <label className="filter-search-row">
+        <span className="sr-only">オペレーター検索</span>
         <input
+          className="operator-search-input"
           type="search"
           value={search.query}
           onChange={(event) => search.setQuery(event.target.value)}
-          placeholder="Search name, class, faction..."
+          placeholder="オペレーター名・職業・陣営で検索"
         />
       </label>
-
-      <div className="filter-selects">
-        <label>
-          <span>Rarity</span>
-          <select
-            value={search.rarity}
-            onChange={(event) => search.setRarity(event.target.value)}
-          >
-            <option value="all">All rarities</option>
-            {rarityOptions.map((value) => (
-              <option key={value} value={value}>
-                {value} stars
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>Class</span>
-          <select
-            value={search.operatorClass}
-            onChange={(event) => search.setOperatorClass(event.target.value)}
-          >
-            <option value="all">All classes</option>
-            {operatorClasses.map((value) => (
-              <option key={value} value={value}>
-                {classLabels[value]} / {value}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>Branch</span>
-          <select
-            value={search.subclass}
-            onChange={(event) => search.setSubclass(event.target.value)}
-          >
-            <option value="all">All branches</option>
-            {search.subclassOptions.map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>Initial</span>
-          <select
-            value={search.initial}
-            onChange={(event) => search.setInitial(event.target.value)}
-          >
-            <option value="all">A–Z</option>
-            {search.initialOptions.map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
     </section>
   )
 }

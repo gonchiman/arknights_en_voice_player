@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react'
 import { classLabels } from '../data/operators'
+import {
+  getOperatorInitialGroup,
+  type OperatorInitialGroup,
+} from '../lib/operatorInitials'
 import type { Operator } from '../types/app'
+
+export type OperatorInitialFilter = 'all' | OperatorInitialGroup
 
 export type OperatorSearchController = {
   query: string
@@ -9,13 +15,10 @@ export type OperatorSearchController = {
   setRarity: (value: string) => void
   operatorClass: string
   setOperatorClass: (value: string) => void
-  subclass: string
-  setSubclass: (value: string) => void
-  initial: string
-  setInitial: (value: string) => void
-  initialOptions: string[]
-  subclassOptions: string[]
+  initial: OperatorInitialFilter
+  setInitial: (value: OperatorInitialFilter) => void
   filteredOperators: Operator[]
+  hasActiveFilters: boolean
   resetFilters: () => void
 }
 
@@ -23,27 +26,16 @@ export function useOperatorSearch(sourceOperators: Operator[]): OperatorSearchCo
   const [query, setQuery] = useState('')
   const [rarity, setRarity] = useState('all')
   const [operatorClass, setOperatorClass] = useState('all')
-  const [subclass, setSubclass] = useState('all')
-  const [initial, setInitial] = useState('all')
+  const [initial, setInitial] = useState<OperatorInitialFilter>('all')
 
-  const initialOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          sourceOperators.map(
-            (operator) => operator.name.at(0)?.toUpperCase() ?? '',
-          ),
-        ),
-      ).sort(),
-    [sourceOperators],
-  )
-  const subclassOptions = useMemo(
-    () => Array.from(new Set(sourceOperators.map((operator) => operator.subclass))).sort(),
-    [sourceOperators],
-  )
+  const hasActiveFilters =
+    query.length > 0 ||
+    rarity !== 'all' ||
+    operatorClass !== 'all' ||
+    initial !== 'all'
 
   const filteredOperators = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase()
+    const normalizedQuery = query.trim().normalize('NFKC').toLocaleLowerCase()
     return sourceOperators.filter((operator) => {
       const searchable = [
         operator.name,
@@ -52,25 +44,27 @@ export function useOperatorSearch(sourceOperators: Operator[]): OperatorSearchCo
         classLabels[operator.operatorClass],
         operator.subclass,
         operator.faction,
+        operator.voiceActor,
+        operator.description,
       ]
         .join(' ')
+        .normalize('NFKC')
         .toLocaleLowerCase()
 
       return (
         (!normalizedQuery || searchable.includes(normalizedQuery)) &&
         (rarity === 'all' || operator.rarity === Number(rarity)) &&
         (operatorClass === 'all' || operator.operatorClass === operatorClass) &&
-        (subclass === 'all' || operator.subclass === subclass) &&
-        (initial === 'all' || operator.name.toUpperCase().startsWith(initial))
+        (initial === 'all' ||
+          getOperatorInitialGroup(operator.japaneseName) === initial)
       )
     })
-  }, [initial, operatorClass, query, rarity, sourceOperators, subclass])
+  }, [initial, operatorClass, query, rarity, sourceOperators])
 
   const resetFilters = () => {
     setQuery('')
     setRarity('all')
     setOperatorClass('all')
-    setSubclass('all')
     setInitial('all')
   }
 
@@ -81,13 +75,10 @@ export function useOperatorSearch(sourceOperators: Operator[]): OperatorSearchCo
     setRarity,
     operatorClass,
     setOperatorClass,
-    subclass,
-    setSubclass,
     initial,
     setInitial,
-    initialOptions,
-    subclassOptions,
     filteredOperators,
+    hasActiveFilters,
     resetFilters,
   }
 }

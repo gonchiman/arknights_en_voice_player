@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "check": "npm run lint && npm run test:sync && npm run validate:voices && npm run build",
-    "test:sync": "node --test tests/stateMerge.test.mjs tests/validateVoiceData.test.mjs",
+    "test:sync": "node --test tests/stateMerge.test.mjs tests/validateVoiceData.test.mjs tests/operatorInitials.test.mjs",
     "generate:voices": "node --use-system-ca scripts/generate-voice-data.mjs",
     "validate:voices": "node scripts/validate-voice-data.mjs",
     "validate:voices:audio": "node --use-system-ca scripts/validate-voice-data.mjs --audio",
