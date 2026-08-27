@@ -1191,6 +1191,24 @@
   font-size: 11px;
 }
 
+.dictation-keyboard-shortcut {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.dictation-keyboard-shortcut kbd {
+  padding: 2px 6px;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  box-shadow: 0 1px 0 var(--border-strong);
+}
+
 .exercise-player {
   border: 1px solid var(--border-strong);
 }

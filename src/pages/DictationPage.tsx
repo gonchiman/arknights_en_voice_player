@@ -313,7 +313,11 @@ export function DictationPage() {
           <div className="exercise-audio">
             <p className="exercise-instruction">
               <Icon name="headphones" size={19} />
-              必要なだけ繰り返し再生してください
+              <span>必要なだけ繰り返し再生してください</span>
+              <span className="dictation-keyboard-shortcut">
+                <kbd>Space</kbd>
+                再生 / 一時停止
+              </span>
             </p>
             <VoicePlayer voice={currentVoice} hideText exerciseMode />
           </div>

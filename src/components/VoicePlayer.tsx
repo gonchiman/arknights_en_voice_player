@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAppState } from '../state/useAppState'
 import type { VoiceLine } from '../types/app'
 import { FavoriteButton } from './FavoriteButton'
@@ -45,7 +45,7 @@ export function VoicePlayer({
     setAudioError(false)
   }, [voice.audioUrl])
 
-  const togglePlayback = async () => {
+  const togglePlayback = useCallback(async () => {
     const audio = audioRef.current
     if (!audio || !voice.audioUrl) return
 
@@ -59,7 +59,41 @@ export function VoicePlayer({
     } else {
       audio.pause()
     }
-  }
+  }, [voice.audioUrl])
+
+  useEffect(() => {
+    if (!exerciseMode || !voice.audioUrl) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.code !== 'Space' ||
+        event.repeat ||
+        event.defaultPrevented ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey
+      ) {
+        return
+      }
+
+      const target = event.target
+      if (
+        target instanceof HTMLElement &&
+        target.closest(
+          'input, textarea, select, button, a, [contenteditable="true"]',
+        )
+      ) {
+        return
+      }
+
+      event.preventDefault()
+      void togglePlayback()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [exerciseMode, togglePlayback, voice.audioUrl])
 
   const speakFallback = () => {
     if (!canSpeakFallback) return
@@ -131,6 +165,7 @@ export function VoicePlayer({
               className="play-button"
               onClick={togglePlayback}
               aria-label={isPlaying ? '一時停止' : '音声を再生'}
+              aria-keyshortcuts={exerciseMode ? 'Space' : undefined}
             >
               <Icon name={isPlaying ? 'pause' : 'play'} size={20} />
             </button>
