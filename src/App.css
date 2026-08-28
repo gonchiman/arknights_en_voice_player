@@ -287,8 +287,7 @@
 }
 
 .filter-selects label,
-.dictation-toolbar label,
-.dictation-voice-filter label {
+.dictation-toolbar label {
   min-width: 0;
   display: grid;
   gap: 3px;
@@ -296,15 +295,13 @@
 
 .filter-selects label > span,
 .dictation-toolbar label > span,
-.dictation-voice-filter label > span,
 .dictation-form-heading > label {
   color: #444;
   font-size: 11px;
 }
 
 .filter-selects select,
-.dictation-toolbar select,
-.dictation-voice-filter select {
+.dictation-toolbar select {
   width: 100%;
   height: 34px;
   padding: 0 28px 0 8px;
@@ -322,7 +319,6 @@
 .operator-search-input:focus,
 .filter-selects select:focus,
 .dictation-toolbar select:focus,
-.dictation-voice-filter select:focus,
 .dictation-form textarea:focus {
   border-color: #333;
   outline: 1px solid #333;
@@ -1194,15 +1190,6 @@
   font-size: 10px;
 }
 
-.dictation-voice-filter {
-  padding: 10px 12px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(150px, 220px);
-  align-items: end;
-  gap: 10px;
-  border-bottom: 1px solid var(--border);
-}
-
 .dictation-voice-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1275,10 +1262,6 @@
 
 .dictation-voice-option > svg {
   color: var(--text-muted);
-}
-
-.dictation-voice-no-results {
-  border: 0;
 }
 
 .dictation-workspace {
@@ -1755,7 +1738,6 @@
     max-height: calc(100dvh - 16px);
   }
 
-  .dictation-voice-filter,
   .dictation-voice-options {
     grid-template-columns: 1fr;
   }

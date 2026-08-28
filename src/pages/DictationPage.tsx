@@ -37,8 +37,6 @@ export function DictationPage() {
   const [favoriteOnly, setFavoriteOnly] = useState(false)
   const [selectedOperatorId, setSelectedOperatorId] = useState('')
   const [currentVoiceId, setCurrentVoiceId] = useState('')
-  const [voiceQuery, setVoiceQuery] = useState('')
-  const [voiceCategory, setVoiceCategory] = useState('all')
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState<Result | null>(null)
   const [showScoringGuide, setShowScoringGuide] = useState(false)
@@ -58,16 +56,6 @@ export function DictationPage() {
   )
   const selectedVoices =
     selectedOperator?.voices.filter((voice) => voice.audioUrl !== null) ?? []
-  const normalizedVoiceQuery = voiceQuery.trim().toLocaleLowerCase()
-  const filteredVoices = selectedVoices.filter(
-    (voice) =>
-      (!normalizedVoiceQuery ||
-        [voice.label, voice.fileCode, voice.category]
-          .join(' ')
-          .toLocaleLowerCase()
-          .includes(normalizedVoiceQuery)) &&
-      (voiceCategory === 'all' || voice.category === voiceCategory),
-  )
   const currentVoice = selectedVoices.find((voice) => voice.id === currentVoiceId)
   const currentStep = currentVoice ? 3 : selectedOperator ? 2 : 1
 
@@ -101,8 +89,6 @@ export function DictationPage() {
     setShowScoringGuide(false)
     setSelectedOperatorId(operatorId)
     setCurrentVoiceId('')
-    setVoiceQuery('')
-    setVoiceCategory('all')
     setAnswer('')
     setResult(null)
   }
@@ -265,75 +251,33 @@ export function DictationPage() {
             </div>
           </div>
 
-          <div className="dictation-voice-filter">
-            <label className="search-field">
-              <span className="sr-only">ボイス名・コードで検索</span>
-              <Icon name="search" size={19} />
-              <input
-                type="search"
-                value={voiceQuery}
-                onChange={(event) => setVoiceQuery(event.target.value)}
-                placeholder="Search voice label or code..."
-              />
-            </label>
-            <label>
-              <span>Category</span>
-              <select
-                value={voiceCategory}
-                onChange={(event) => setVoiceCategory(event.target.value)}
-              >
-                <option value="all">All categories</option>
-                <option value="Talk">Talk</option>
-                <option value="Battle">Battle</option>
-                <option value="Greeting">Greeting</option>
-              </select>
-            </label>
-          </div>
-
-          {filteredVoices.length > 0 ? (
-            <div className="dictation-voice-options">
-              {filteredVoices.map((voice) => (
-                <button
-                  key={voice.id}
-                  type="button"
-                  className="dictation-voice-option"
-                  onClick={() => selectVoice(voice.id)}
-                >
-                  <span className="voice-code">
-                    {voice.fileCode.replace('CN_', 'EN / ')}
-                  </span>
-                  <span>
-                    <strong>{voice.label}</strong>
-                    <small>{voice.category}</small>
-                  </span>
-                  <span
-                    className={`dictation-voice-best-score${
-                      (bestScoreByVoice.get(voice.id) ?? 0) >= 90 ? ' mastered' : ''
-                    }`}
-                  >
-                    <small>BEST</small>
-                    <strong>{bestScoreByVoice.get(voice.id) ?? '—'}</strong>
-                  </span>
-                  <Icon name="arrow" size={17} />
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="no-results dictation-voice-no-results">
-              <span>NO MATCH</span>
-              <h2>条件に合うボイスがありません。</h2>
+          <div className="dictation-voice-options">
+            {selectedVoices.map((voice) => (
               <button
+                key={voice.id}
                 type="button"
-                className="primary-button"
-                onClick={() => {
-                  setVoiceQuery('')
-                  setVoiceCategory('all')
-                }}
+                className="dictation-voice-option"
+                onClick={() => selectVoice(voice.id)}
               >
-                条件をリセット
+                <span className="voice-code">
+                  {voice.fileCode.replace('CN_', 'EN / ')}
+                </span>
+                <span>
+                  <strong>{voice.label}</strong>
+                  <small>{voice.category}</small>
+                </span>
+                <span
+                  className={`dictation-voice-best-score${
+                    (bestScoreByVoice.get(voice.id) ?? 0) >= 90 ? ' mastered' : ''
+                  }`}
+                >
+                  <small>BEST</small>
+                  <strong>{bestScoreByVoice.get(voice.id) ?? '—'}</strong>
+                </span>
+                <Icon name="arrow" size={17} />
               </button>
-            </div>
-          )}
+            ))}
+          </div>
         </section>
       )}
 
