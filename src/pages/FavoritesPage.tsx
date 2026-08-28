@@ -3,13 +3,14 @@ import { Icon } from '../components/Icon'
 import { OperatorCard } from '../components/OperatorCard'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { getOperator, operators, voiceLines } from '../data/operators'
+import { sortOperatorsByJapaneseName } from '../lib/operatorSorting'
 import { useAppState } from '../state/useAppState'
 
 export function FavoritesPage() {
   const navigate = useNavigate()
   const { favoriteOperatorIds, favoriteVoiceIds } = useAppState()
-  const favoriteOperators = operators.filter((operator) =>
-    favoriteOperatorIds.includes(operator.id),
+  const favoriteOperators = sortOperatorsByJapaneseName(
+    operators.filter((operator) => favoriteOperatorIds.includes(operator.id)),
   )
   const favoriteVoices = voiceLines.filter((line) => favoriteVoiceIds.includes(line.id))
 
@@ -68,8 +69,8 @@ export function FavoritesPage() {
                       <div className="favorite-voice-owner">
                         <span>{operator?.initials}</span>
                         <div>
-                          <strong>{operator?.name}</strong>
-                          <small>{operator?.japaneseName}</small>
+                          <strong>{operator?.japaneseName}</strong>
+                          <small>{operator?.name}</small>
                         </div>
                       </div>
                       <VoicePlayer voice={line} />

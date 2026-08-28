@@ -6,12 +6,15 @@ import { OperatorFilterPanel } from '../components/OperatorFilterPanel'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { classLabels, operators, playableVoiceLines, voiceLines } from '../data/operators'
 import { useOperatorSearch } from '../hooks/useOperatorSearch'
+import { sortOperatorsByJapaneseName } from '../lib/operatorSorting'
 import { useAppState } from '../state/useAppState'
+
+const operatorsByJapaneseName = sortOperatorsByJapaneseName(operators)
 
 export function OperatorsPage() {
   const operatorDetailRef = useRef<HTMLElement>(null)
   const [searchParams, setSearchParams] = useSearchParams()
-  const operatorSearch = useOperatorSearch(operators)
+  const operatorSearch = useOperatorSearch(operatorsByJapaneseName)
   const { filteredOperators, resetFilters } = operatorSearch
   const { favoriteOperatorIds, toggleOperatorFavorite } = useAppState()
 
@@ -76,7 +79,7 @@ export function OperatorsPage() {
           <aside
             ref={operatorDetailRef}
             className={`operator-detail${requestedOperator ? ' mobile-detail-open' : ''}`}
-            aria-label={`${selectedOperator.name}のボイス詳細`}
+            aria-label={`${selectedOperator.japaneseName}（${selectedOperator.name}）のボイス詳細`}
             style={{ '--operator-accent': selectedOperator.accent } as CSSProperties}
           >
             <div className="mobile-detail-toolbar">
@@ -94,12 +97,12 @@ export function OperatorsPage() {
             <div className="operator-detail-hero">
               <div>
                 <p className="operator-stars">{'★'.repeat(selectedOperator.rarity)}</p>
-                <h2>{selectedOperator.name}</h2>
-                <p>{selectedOperator.japaneseName}</p>
+                <h2>{selectedOperator.japaneseName}</h2>
+                <p>{selectedOperator.name}</p>
               </div>
               <FavoriteButton
                 active={favoriteOperatorIds.includes(selectedOperator.id)}
-                label={selectedOperator.name}
+                label={selectedOperator.japaneseName}
                 onClick={() => toggleOperatorFavorite(selectedOperator.id)}
               />
             </div>

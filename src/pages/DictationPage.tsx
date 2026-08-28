@@ -6,6 +6,7 @@ import { OperatorFilterPanel } from '../components/OperatorFilterPanel'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { operators } from '../data/operators'
 import { useOperatorSearch } from '../hooks/useOperatorSearch'
+import { sortOperatorsByJapaneseName } from '../lib/operatorSorting'
 import { useAppState } from '../state/useAppState'
 import { answerScore } from '../utils/text'
 
@@ -14,8 +15,10 @@ type Result = {
   correct: boolean
 }
 
-const dictationOperators = operators.filter((operator) =>
-  operator.voices.some((voice) => voice.audioUrl !== null),
+const dictationOperators = sortOperatorsByJapaneseName(
+  operators.filter((operator) =>
+    operator.voices.some((voice) => voice.audioUrl !== null),
+  ),
 )
 const dictationVoiceIds = new Set(
   dictationOperators.flatMap((operator) =>
@@ -245,8 +248,8 @@ export function DictationPage() {
               オペレーター選択
             </button>
             <div>
-              <strong>{selectedOperator.name}</strong>
-              <span>{selectedVoices.length} voices</span>
+              <strong>{selectedOperator.japaneseName}</strong>
+              <span>{selectedOperator.name} · {selectedVoices.length} voices</span>
             </div>
           </div>
 
@@ -297,8 +300,10 @@ export function DictationPage() {
             </span>
             <div>
               <p className="eyebrow">CURRENT SPEAKER</p>
-              <h2>{selectedOperator.name}</h2>
-              <p>{currentVoice.category} · {currentVoice.label}</p>
+              <h2>{selectedOperator.japaneseName}</h2>
+              <p>
+                {selectedOperator.name} · {currentVoice.category} · {currentVoice.label}
+              </p>
             </div>
           </div>
 
