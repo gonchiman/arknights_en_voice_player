@@ -26,14 +26,30 @@ const dictationVoiceIds = new Set(
 const dictationVoiceCount = dictationVoiceIds.size
 
 export function DictationPage() {
-  const { attempts, recordAttempt, clearProgress } = useAppState()
+  const {
+    attempts,
+    favoriteOperatorIds,
+    recordAttempt,
+    clearProgress,
+  } = useAppState()
   const operatorSearch = useOperatorSearch(dictationOperators)
+  const [favoriteOnly, setFavoriteOnly] = useState(false)
   const [selectedOperatorId, setSelectedOperatorId] = useState('')
   const [currentVoiceId, setCurrentVoiceId] = useState('')
   const [voiceQuery, setVoiceQuery] = useState('')
   const [voiceCategory, setVoiceCategory] = useState('all')
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState<Result | null>(null)
+  const favoriteOperatorIdSet = useMemo(
+    () => new Set(favoriteOperatorIds),
+    [favoriteOperatorIds],
+  )
+  const favoriteDictationOperatorCount = dictationOperators.filter((operator) =>
+    favoriteOperatorIdSet.has(operator.id),
+  ).length
+  const filteredDictationOperators = operatorSearch.filteredOperators.filter(
+    (operator) => !favoriteOnly || favoriteOperatorIdSet.has(operator.id),
+  )
 
   const selectedOperator = dictationOperators.find(
     (operator) => operator.id === selectedOperatorId,
@@ -107,6 +123,11 @@ export function DictationPage() {
     setResult(null)
   }
 
+  const resetOperatorFilters = () => {
+    operatorSearch.resetFilters()
+    setFavoriteOnly(false)
+  }
+
   const checkAnswer = () => {
     if (!currentVoice || !answer.trim()) return
     const score = answerScore(answer, currentVoice.english)
@@ -163,19 +184,26 @@ export function DictationPage() {
 
       {!selectedOperator && (
         <div className="dictation-operator-step">
-          <OperatorFilterPanel search={operatorSearch} />
+          <OperatorFilterPanel
+            search={operatorSearch}
+            favoriteFilter={{
+              active: favoriteOnly,
+              count: favoriteDictationOperatorCount,
+              onChange: setFavoriteOnly,
+            }}
+          />
 
           <section className="dictation-selection-panel" aria-label="オペレーター選択">
             <div className="section-heading">
               <h2>
-                {operatorSearch.filteredOperators.length} / {dictationOperators.length}{' '}
+                {filteredDictationOperators.length} / {dictationOperators.length}{' '}
                 オペレーター
               </h2>
             </div>
 
-            {operatorSearch.filteredOperators.length > 0 ? (
+            {filteredDictationOperators.length > 0 ? (
               <div className="operator-list dictation-operator-list">
-                {operatorSearch.filteredOperators.map((operator) => (
+                {filteredDictationOperators.map((operator) => (
                   <OperatorCard
                     key={operator.id}
                     operator={operator}
@@ -193,7 +221,7 @@ export function DictationPage() {
                 <button
                   type="button"
                   className="primary-button"
-                  onClick={operatorSearch.resetFilters}
+                  onClick={resetOperatorFilters}
                 >
                   条件をリセット
                 </button>

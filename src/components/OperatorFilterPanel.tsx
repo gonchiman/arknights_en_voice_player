@@ -22,9 +22,25 @@ const initialOptions = [
 
 type OperatorFilterPanelProps = {
   search: OperatorSearchController
+  favoriteFilter?: {
+    active: boolean
+    count: number
+    onChange: (active: boolean) => void
+  }
 }
 
-export function OperatorFilterPanel({ search }: OperatorFilterPanelProps) {
+export function OperatorFilterPanel({
+  search,
+  favoriteFilter,
+}: OperatorFilterPanelProps) {
+  const hasActiveFilters =
+    search.hasActiveFilters || Boolean(favoriteFilter?.active)
+
+  const resetFilters = () => {
+    search.resetFilters()
+    favoriteFilter?.onChange(false)
+  }
+
   return (
     <section className="filter-panel" aria-label="オペレーター検索条件">
       <div className="filter-panel-heading">
@@ -32,8 +48,8 @@ export function OperatorFilterPanel({ search }: OperatorFilterPanelProps) {
         <button
           type="button"
           className="filter-reset-button"
-          disabled={!search.hasActiveFilters}
-          onClick={search.resetFilters}
+          disabled={!hasActiveFilters}
+          onClick={resetFilters}
         >
           条件をリセット
         </button>
@@ -100,6 +116,28 @@ export function OperatorFilterPanel({ search }: OperatorFilterPanelProps) {
           </button>
         ))}
       </div>
+
+      {favoriteFilter && (
+        <div className="filter-option-row" role="group" aria-label="お気に入り">
+          <span className="filter-option-label">お気に入り</span>
+          <button
+            type="button"
+            className={`filter-chip${favoriteFilter.active ? '' : ' active'}`}
+            aria-pressed={!favoriteFilter.active}
+            onClick={() => favoriteFilter.onChange(false)}
+          >
+            すべて
+          </button>
+          <button
+            type="button"
+            className={`filter-chip${favoriteFilter.active ? ' active' : ''}`}
+            aria-pressed={favoriteFilter.active}
+            onClick={() => favoriteFilter.onChange(true)}
+          >
+            お気に入りのみ（{favoriteFilter.count}）
+          </button>
+        </div>
+      )}
 
       <label className="filter-search-row">
         <span className="sr-only">オペレーター検索</span>
