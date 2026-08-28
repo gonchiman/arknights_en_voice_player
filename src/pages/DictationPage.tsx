@@ -1,12 +1,13 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { DictationScoringGuide } from '../components/DictationScoringGuide'
 import { OperatorCard } from '../components/OperatorCard'
 import { OperatorFilterPanel } from '../components/OperatorFilterPanel'
 import { VoicePlayer } from '../components/VoicePlayer'
-import { operators } from '../data/operators'
 import { useOperatorSearch } from '../hooks/useOperatorSearch'
 import { sortOperatorsByJapaneseName } from '../lib/operatorSorting'
+import { isVoicePlayable, voiceDisplayCode } from '../lib/voicePlayback'
+import { useGameCatalog } from '../state/gameCatalogContext'
 import { useAppState } from '../state/useAppState'
 import { answerScore } from '../utils/text'
 
@@ -15,21 +16,27 @@ type Result = {
   correct: boolean
 }
 
-const dictationOperators = sortOperatorsByJapaneseName(
-  operators.filter((operator) =>
-    operator.voices.some((voice) => voice.audioUrl !== null),
-  ),
-)
-const dictationVoiceIds = new Set(
-  dictationOperators.flatMap((operator) =>
-    operator.voices
-      .filter((voice) => voice.audioUrl !== null)
-      .map((voice) => voice.id),
-  ),
-)
-const dictationVoiceCount = dictationVoiceIds.size
-
 export function DictationPage() {
+  const catalog = useGameCatalog()
+  const dictationOperators = useMemo(
+    () =>
+      sortOperatorsByJapaneseName(
+        catalog.operators.filter((operator) =>
+          operator.voices.some(isVoicePlayable),
+        ),
+      ),
+    [catalog.operators],
+  )
+  const dictationVoiceIds = useMemo(
+    () =>
+      new Set(
+        dictationOperators.flatMap((operator) =>
+          operator.voices.filter(isVoicePlayable).map((voice) => voice.id),
+        ),
+      ),
+    [dictationOperators],
+  )
+  const dictationVoiceCount = dictationVoiceIds.size
   const {
     attempts,
     favoriteOperatorIds,
@@ -42,6 +49,16 @@ export function DictationPage() {
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState<Result | null>(null)
   const [showScoringGuide, setShowScoringGuide] = useState(false)
+
+  useEffect(() => {
+    setFavoriteOnly(false)
+    setSelectedOperatorId('')
+    setCurrentVoiceId('')
+    setAnswer('')
+    setResult(null)
+    setShowScoringGuide(false)
+  }, [catalog.id])
+
   const favoriteOperatorIdSet = useMemo(
     () => new Set(favoriteOperatorIds),
     [favoriteOperatorIds],
@@ -56,8 +73,7 @@ export function DictationPage() {
   const selectedOperator = dictationOperators.find(
     (operator) => operator.id === selectedOperatorId,
   )
-  const selectedVoices =
-    selectedOperator?.voices.filter((voice) => voice.audioUrl !== null) ?? []
+  const selectedVoices = selectedOperator?.voices.filter(isVoicePlayable) ?? []
   const currentVoice = selectedVoices.find((voice) => voice.id === currentVoiceId)
   const currentStep = currentVoice ? 3 : selectedOperator ? 2 : 1
 
@@ -218,7 +234,7 @@ export function DictationPage() {
                     operator={operator}
                     onSelect={() => selectOperator(operator.id)}
                     clearedVoiceCount={operator.voices.filter(
-                      (voice) => voice.audioUrl !== null && mastered.has(voice.id),
+                      (voice) => isVoicePlayable(voice) && mastered.has(voice.id),
                     ).length}
                   />
                 ))}
@@ -262,7 +278,7 @@ export function DictationPage() {
                 onClick={() => selectVoice(voice.id)}
               >
                 <span className="voice-code">
-                  {voice.fileCode.replace('CN_', 'EN / ')}
+                  {voiceDisplayCode(voice)}
                 </span>
                 <span>
                   <strong>{voice.label}</strong>
@@ -314,13 +330,17 @@ export function DictationPage() {
               <span className="dictation-keyboard-shortcut">
                 <span>
                   <kbd>Space</kbd>
-                  再生 / 一時停止
+                  {currentVoice.playbackMode === 'tts'
+                    ? '再生 / 停止'
+                    : '再生 / 一時停止'}
                 </span>
-                <span>
-                  <kbd>←</kbd>
-                  <kbd>→</kbd>
-                  1秒移動
-                </span>
+                {currentVoice.playbackMode === 'audio' && (
+                  <span>
+                    <kbd>←</kbd>
+                    <kbd>→</kbd>
+                    1秒移動
+                  </span>
+                )}
               </span>
             </p>
             <VoicePlayer voice={currentVoice} hideText exerciseMode />

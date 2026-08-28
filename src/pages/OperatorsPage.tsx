@@ -1,20 +1,25 @@
-import { useEffect, useRef, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { OperatorCard } from '../components/OperatorCard'
 import { OperatorFilterPanel } from '../components/OperatorFilterPanel'
 import { TranslationToggle } from '../components/TranslationToggle'
 import { VoicePlayer } from '../components/VoicePlayer'
-import { classLabels, operators, playableVoiceLines, voiceLines } from '../data/operators'
 import { useOperatorSearch } from '../hooks/useOperatorSearch'
 import { sortOperatorsByJapaneseName } from '../lib/operatorSorting'
+import { isVoicePlayable } from '../lib/voicePlayback'
+import { useGameCatalog } from '../state/gameCatalogContext'
 import { useAppState } from '../state/useAppState'
 
-const operatorsByJapaneseName = sortOperatorsByJapaneseName(operators)
-
 export function OperatorsPage() {
+  const catalog = useGameCatalog()
   const operatorDetailRef = useRef<HTMLElement>(null)
   const [searchParams, setSearchParams] = useSearchParams()
+  const operatorsByJapaneseName = useMemo(
+    () => sortOperatorsByJapaneseName(catalog.operators),
+    [catalog.operators],
+  )
+  const playableVoiceCount = catalog.voiceLines.filter(isVoicePlayable).length
   const operatorSearch = useOperatorSearch(operatorsByJapaneseName)
   const { filteredOperators, resetFilters } = operatorSearch
   const { favoriteOperatorIds, toggleOperatorFavorite } = useAppState()
@@ -48,8 +53,8 @@ export function OperatorsPage() {
             <div>
               <p className="eyebrow">OPERATOR INDEX</p>
               <h2>
-                {filteredOperators.length} / {operators.length} operators ·{' '}
-                {playableVoiceLines.length} playable / {voiceLines.length} records
+                {filteredOperators.length} / {catalog.operators.length} operators ·{' '}
+                {playableVoiceCount} playable / {catalog.voiceLines.length} records
               </h2>
             </div>
           </div>
@@ -112,11 +117,11 @@ export function OperatorsPage() {
               <div className="metadata-grid">
                 <div>
                   <span>CLASS</span>
-                  <strong>{classLabels[selectedOperator.operatorClass]}</strong>
+                  <strong>{catalog.classLabels[selectedOperator.operatorClass]}</strong>
                   <small>{selectedOperator.operatorClass}</small>
                 </div>
                 <div>
-                  <span>BRANCH</span>
+                  <span>{catalog.secondaryMetadataLabel}</span>
                   <strong>{selectedOperator.subclass}</strong>
                 </div>
                 <div>

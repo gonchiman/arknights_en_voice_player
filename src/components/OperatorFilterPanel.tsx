@@ -1,7 +1,5 @@
-import { classLabels, operatorClasses } from '../data/operators'
 import type { OperatorSearchController } from '../hooks/useOperatorSearch'
-
-const rarityOptions = [6, 5, 4, 3, 2, 1] as const
+import { useGameCatalog } from '../state/gameCatalogContext'
 
 const initialOptions = [
   { value: 'all', label: 'すべて' },
@@ -33,6 +31,8 @@ export function OperatorFilterPanel({
   search,
   favoriteFilter,
 }: OperatorFilterPanelProps) {
+  const { classFilterLabel, classLabels, operatorClasses, rarityOptions } =
+    useGameCatalog()
   const hasActiveFilters =
     search.hasActiveFilters || Boolean(favoriteFilter?.active)
 
@@ -70,8 +70,8 @@ export function OperatorFilterPanel({
         ))}
       </div>
 
-      <div className="filter-option-row" role="group" aria-label="職業">
-        <span className="filter-option-label">職業</span>
+      <div className="filter-option-row" role="group" aria-label={classFilterLabel}>
+        <span className="filter-option-label">{classFilterLabel}</span>
         <button
           type="button"
           className={`filter-chip${search.operatorClass === 'all' ? ' active' : ''}`}
@@ -146,7 +146,7 @@ export function OperatorFilterPanel({
           type="search"
           value={search.query}
           onChange={(event) => search.setQuery(event.target.value)}
-          placeholder="オペレーター名・職業・陣営で検索"
+          placeholder={`オペレーター名・${classFilterLabel}・陣営で検索`}
         />
       </label>
     </section>

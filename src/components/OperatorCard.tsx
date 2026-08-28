@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
-import { classLabels } from '../data/operators'
+import { isVoicePlayable } from '../lib/voicePlayback'
+import { useGameCatalog } from '../state/gameCatalogContext'
 import { useAppState } from '../state/useAppState'
 import type { Operator } from '../types/app'
 import { FavoriteButton } from './FavoriteButton'
@@ -17,11 +18,10 @@ export function OperatorCard({
   onSelect,
   clearedVoiceCount,
 }: OperatorCardProps) {
+  const { classLabels } = useGameCatalog()
   const { favoriteOperatorIds, toggleOperatorFavorite } = useAppState()
   const isFavorite = favoriteOperatorIds.includes(operator.id)
-  const playableVoices = operator.voices.filter(
-    (voice) => voice.audioUrl !== null,
-  ).length
+  const playableVoices = operator.voices.filter(isVoicePlayable).length
   const style = { '--operator-accent': operator.accent } as CSSProperties
 
   return (

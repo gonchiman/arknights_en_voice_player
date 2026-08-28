@@ -1,4 +1,5 @@
 import type { Operator, OperatorClass, VoiceLine } from '../types/app'
+import { isVoiceConfiguredForPlayback } from '../lib/voicePlayback'
 import { operatorCatalog } from './operatorCatalog'
 import { operatorVoiceRecords } from './operatorVoices'
 
@@ -12,6 +13,7 @@ function voicesFor(operatorId: string): VoiceLine[] {
       id: `${operatorId}-${record.fileCode.toLowerCase()}`,
       operatorId,
       audioUrl: audioPath ? `${audioRoot}/${audioPath}` : null,
+      playbackMode: audioPath ? 'audio' : 'unavailable',
     }),
   )
 }
@@ -23,7 +25,7 @@ export const operators: Operator[] = operatorCatalog.map((record) => ({
 
 export const voiceLines = operators.flatMap((operator) => operator.voices)
 export const playableVoiceLines = voiceLines.filter(
-  (line): line is VoiceLine & { audioUrl: string } => line.audioUrl !== null,
+  isVoiceConfiguredForPlayback,
 )
 
 export const operatorClasses: OperatorClass[] = [
@@ -37,7 +39,7 @@ export const operatorClasses: OperatorClass[] = [
   'Specialist',
 ]
 
-export const classLabels: Record<OperatorClass, string> = {
+export const classLabels: Record<string, string> = {
   Vanguard: '先鋒',
   Guard: '前衛',
   Defender: '重装',
@@ -47,6 +49,22 @@ export const classLabels: Record<OperatorClass, string> = {
   Supporter: '補助',
   Specialist: '特殊',
 }
+
+export const arknightsCatalog = {
+  id: 'arknights',
+  operators,
+  voiceLines,
+  playableVoiceLines,
+  operatorClasses,
+  classLabels,
+  rarityOptions: [6, 5, 4, 3, 2, 1],
+  classFilterLabel: '職業',
+  secondaryMetadataLabel: 'BRANCH',
+  source: {
+    label: 'Arknights Audio（音声データ）',
+    url: 'https://github.com/PseudoMon/arknights-audio',
+  },
+} satisfies import('../types/app').GameCatalog
 
 export function getOperator(operatorId: string) {
   return operators.find((operator) => operator.id === operatorId)

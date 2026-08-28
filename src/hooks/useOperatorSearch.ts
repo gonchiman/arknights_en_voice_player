@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
-import { classLabels } from '../data/operators'
 import {
   getOperatorInitialGroup,
   type OperatorInitialGroup,
 } from '../lib/operatorInitials'
+import { useGameCatalog } from '../state/gameCatalogContext'
 import type { Operator } from '../types/app'
 
 export type OperatorInitialFilter = 'all' | OperatorInitialGroup
@@ -23,6 +23,7 @@ export type OperatorSearchController = {
 }
 
 export function useOperatorSearch(sourceOperators: Operator[]): OperatorSearchController {
+  const { classLabels } = useGameCatalog()
   const [query, setQuery] = useState('')
   const [rarity, setRarity] = useState('all')
   const [operatorClass, setOperatorClass] = useState('all')
@@ -59,7 +60,7 @@ export function useOperatorSearch(sourceOperators: Operator[]): OperatorSearchCo
           getOperatorInitialGroup(operator.japaneseName) === initial)
       )
     })
-  }, [initial, operatorClass, query, rarity, sourceOperators])
+  }, [classLabels, initial, operatorClass, query, rarity, sourceOperators])
 
   const resetFilters = () => {
     setQuery('')

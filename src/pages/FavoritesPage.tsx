@@ -3,17 +3,22 @@ import { Icon } from '../components/Icon'
 import { OperatorCard } from '../components/OperatorCard'
 import { TranslationToggle } from '../components/TranslationToggle'
 import { VoicePlayer } from '../components/VoicePlayer'
-import { getOperator, operators, voiceLines } from '../data/operators'
+import { getGamePath } from '../config/gameModes'
 import { sortOperatorsByJapaneseName } from '../lib/operatorSorting'
+import { useGameCatalog } from '../state/gameCatalogContext'
 import { useAppState } from '../state/useAppState'
 
 export function FavoritesPage() {
+  const catalog = useGameCatalog()
   const navigate = useNavigate()
   const { favoriteOperatorIds, favoriteVoiceIds } = useAppState()
   const favoriteOperators = sortOperatorsByJapaneseName(
-    operators.filter((operator) => favoriteOperatorIds.includes(operator.id)),
+    catalog.operators.filter((operator) => favoriteOperatorIds.includes(operator.id)),
   )
-  const favoriteVoices = voiceLines.filter((line) => favoriteVoiceIds.includes(line.id))
+  const favoriteVoices = catalog.voiceLines.filter((line) =>
+    favoriteVoiceIds.includes(line.id),
+  )
+  const libraryPath = getGamePath(catalog.id, 'operators')
 
   return (
     <>
@@ -25,7 +30,7 @@ export function FavoritesPage() {
           <p className="eyebrow">NOTHING SAVED YET</p>
           <h2>何度も聞きたい声を集めましょう。</h2>
           <p>ライブラリのハートを押すと、ここからすぐに再生できます。</p>
-          <Link className="primary-button" to="/">
+          <Link className="primary-button" to={libraryPath}>
             Voice libraryへ
             <Icon name="arrow" size={17} />
           </Link>
@@ -45,7 +50,9 @@ export function FavoritesPage() {
                   <OperatorCard
                     key={operator.id}
                     operator={operator}
-                    onSelect={() => navigate(`/?operator=${operator.id}`)}
+                    onSelect={() =>
+                      navigate(`${libraryPath}?operator=${encodeURIComponent(operator.id)}`)
+                    }
                   />
                 ))}
               </div>
@@ -65,7 +72,9 @@ export function FavoritesPage() {
             {favoriteVoices.length > 0 ? (
               <div className="favorite-voice-list">
                 {favoriteVoices.map((line) => {
-                  const operator = getOperator(line.operatorId)
+                  const operator = catalog.operators.find(
+                    (candidate) => candidate.id === line.operatorId,
+                  )
                   return (
                     <div key={line.id} className="favorite-voice-item">
                       <div className="favorite-voice-owner">

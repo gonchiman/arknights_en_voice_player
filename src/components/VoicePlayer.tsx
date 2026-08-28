@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { canUseBrowserTts, voiceDisplayCode } from '../lib/voicePlayback'
 import { useAppState } from '../state/useAppState'
 import type { VoiceLine } from '../types/app'
 import { FavoriteButton } from './FavoriteButton'
@@ -23,34 +24,52 @@ export function VoicePlayer({
   exerciseMode = false,
 }: VoicePlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
+  const speechUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [audioError, setAudioError] = useState(false)
+  const [speechError, setSpeechError] = useState(false)
   const {
     favoriteVoiceIds,
     showJapaneseTranslations,
     toggleVoiceFavorite,
   } = useAppState()
   const isFavorite = favoriteVoiceIds.includes(voice.id)
-  const canSpeakFallback =
-    voice.english.trim().length > 0 &&
-    typeof window !== 'undefined' &&
-    typeof window.speechSynthesis?.speak === 'function' &&
-    typeof SpeechSynthesisUtterance !== 'undefined'
+  const audioUrl = voice.playbackMode === 'audio' ? voice.audioUrl : null
+  const hasAudioPlayback = Boolean(audioUrl)
+  const isTts = voice.playbackMode === 'tts'
+  const canSpeakFallback = voice.english.trim().length > 0 && canUseBrowserTts()
+  const hasTtsPlayback = isTts && canSpeakFallback
 
   useEffect(() => {
     const audio = audioRef.current
     audio?.pause()
+    if (speechUtteranceRef.current) {
+      window.speechSynthesis.cancel()
+      speechUtteranceRef.current = null
+    }
     setIsPlaying(false)
+    setIsSpeaking(false)
     setCurrentTime(0)
     setDuration(0)
     setAudioError(false)
-  }, [voice.audioUrl])
+    setSpeechError(false)
+  }, [audioUrl, voice.id])
+
+  useEffect(
+    () => () => {
+      if (!speechUtteranceRef.current) return
+      window.speechSynthesis.cancel()
+      speechUtteranceRef.current = null
+    },
+    [],
+  )
 
   const togglePlayback = useCallback(async () => {
     const audio = audioRef.current
-    if (!audio || !voice.audioUrl) return
+    if (!audio || !audioUrl) return
 
     if (audio.paused) {
       try {
@@ -62,7 +81,7 @@ export function VoicePlayer({
     } else {
       audio.pause()
     }
-  }, [voice.audioUrl])
+  }, [audioUrl])
 
   const seek = useCallback((value: number) => {
     const audio = audioRef.current
@@ -88,14 +107,47 @@ export function VoicePlayer({
     [seek],
   )
 
+  const toggleSpeechPlayback = useCallback(() => {
+    if (!canSpeakFallback) return
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel()
+      speechUtteranceRef.current = null
+      setIsSpeaking(false)
+      return
+    }
+
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(voice.english)
+    utterance.lang = 'en-US'
+    utterance.rate = 0.9
+    utterance.onend = () => {
+      if (speechUtteranceRef.current !== utterance) return
+      speechUtteranceRef.current = null
+      setIsSpeaking(false)
+    }
+    utterance.onerror = (event) => {
+      if (speechUtteranceRef.current !== utterance) return
+      speechUtteranceRef.current = null
+      setIsSpeaking(false)
+      if (event.error !== 'canceled' && event.error !== 'interrupted') {
+        setSpeechError(true)
+      }
+    }
+    speechUtteranceRef.current = utterance
+    setSpeechError(false)
+    setIsSpeaking(true)
+    window.speechSynthesis.speak(utterance)
+  }, [canSpeakFallback, isSpeaking, voice.english])
+
   useEffect(() => {
-    if (!exerciseMode || !voice.audioUrl) return
+    if (!exerciseMode || (!hasAudioPlayback && !hasTtsPlayback)) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
       const isPlaybackShortcut =
         event.code === 'Space' ||
-        event.code === 'ArrowLeft' ||
-        event.code === 'ArrowRight'
+        (hasAudioPlayback &&
+          (event.code === 'ArrowLeft' || event.code === 'ArrowRight'))
 
       if (
         !isPlaybackShortcut ||
@@ -124,6 +176,8 @@ export function VoicePlayer({
         movePlayback(-1)
       } else if (event.code === 'ArrowRight') {
         movePlayback(1)
+      } else if (hasTtsPlayback) {
+        toggleSpeechPlayback()
       } else {
         void togglePlayback()
       }
@@ -131,43 +185,47 @@ export function VoicePlayer({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [exerciseMode, movePlayback, togglePlayback, voice.audioUrl])
-
-  const speakFallback = () => {
-    if (!canSpeakFallback) return
-    window.speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(voice.english)
-    utterance.lang = 'en-US'
-    utterance.rate = 0.9
-    window.speechSynthesis.speak(utterance)
-  }
+  }, [
+    exerciseMode,
+    hasAudioPlayback,
+    hasTtsPlayback,
+    movePlayback,
+    togglePlayback,
+    toggleSpeechPlayback,
+  ])
 
   const fallbackSpeechButton = canSpeakFallback ? (
     <button
       type="button"
       className="speech-fallback-button"
-      onClick={speakFallback}
+      onClick={toggleSpeechPlayback}
     >
-      ブラウザ音声で確認
+      {isSpeaking ? '停止' : 'ブラウザ音声で確認'}
     </button>
   ) : null
 
   return (
     <article
       className={`voice-player${exerciseMode ? ' exercise-player' : ''}${
-        voice.audioUrl ? '' : ' voice-unavailable'
+        hasAudioPlayback ? '' : isTts ? ' voice-tts' : ' voice-unavailable'
       }`}
       aria-keyshortcuts={
-        exerciseMode ? 'Space ArrowLeft ArrowRight' : undefined
+        exerciseMode && (hasAudioPlayback || hasTtsPlayback)
+          ? hasAudioPlayback
+            ? 'Space ArrowLeft ArrowRight'
+            : 'Space'
+          : undefined
       }
     >
       <div className="voice-player-topline">
         <div>
-          <span className="voice-code">{voice.fileCode.replace('CN_', 'EN / ')}</span>
+          <span className="voice-code">{voiceDisplayCode(voice)}</span>
           <h3>{voice.label}</h3>
         </div>
         <div className="voice-player-actions">
-          {!voice.audioUrl && <span className="unavailable-badge">NO AUDIO</span>}
+          {!hasAudioPlayback && (
+            <span className="unavailable-badge">{isTts ? 'BROWSER TTS' : 'NO AUDIO'}</span>
+          )}
           {!exerciseMode && (
             <FavoriteButton
               active={isFavorite}
@@ -179,11 +237,11 @@ export function VoicePlayer({
         </div>
       </div>
 
-      {voice.audioUrl ? (
+      {hasAudioPlayback ? (
         <>
           <audio
             ref={audioRef}
-            src={voice.audioUrl}
+            src={audioUrl ?? undefined}
             preload="none"
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
@@ -226,6 +284,28 @@ export function VoicePlayer({
             </div>
           )}
         </>
+      ) : isTts ? (
+        <div className="tts-controls">
+          <button
+            type="button"
+            className="play-button"
+            disabled={!canSpeakFallback}
+            onClick={toggleSpeechPlayback}
+            aria-label={isSpeaking ? 'ブラウザ音声を停止' : 'ブラウザ音声を再生'}
+            aria-keyshortcuts={exerciseMode ? 'Space' : undefined}
+          >
+            <Icon name={isSpeaking ? 'stop' : 'play'} size={20} />
+          </button>
+          <div className="tts-controls-copy">
+            <strong>ブラウザTTS</strong>
+            <span>
+              {canSpeakFallback
+                ? '端末の英語音声で再生します。'
+                : 'このブラウザは音声読み上げに対応していません。'}
+            </span>
+          </div>
+          {speechError && <span className="tts-error">再生できませんでした。</span>}
+        </div>
       ) : (
         <div className="unavailable-message" role="status">
           <Icon name="volume" size={18} />

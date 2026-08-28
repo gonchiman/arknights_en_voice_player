@@ -8,6 +8,7 @@ type IconName =
   | 'play'
   | 'search'
   | 'shuffle'
+  | 'stop'
   | 'volume'
 
 type IconProps = {
@@ -55,6 +56,7 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M4 17h3c1.4 0 2.4-.8 3.2-2" />
     </>
   ),
+  stop: <rect x="6" y="6" width="12" height="12" />,
   volume: (
     <>
       <path d="M11 5 6 9H2v6h4l5 4V5Z" />
