@@ -9,6 +9,7 @@ type OperatorCardProps = {
   operator: Operator
   selected?: boolean
   onSelect?: () => void
+  buttonId?: string
   clearedVoiceCount?: number
 }
 
@@ -16,6 +17,7 @@ export function OperatorCard({
   operator,
   selected = false,
   onSelect,
+  buttonId,
   clearedVoiceCount,
 }: OperatorCardProps) {
   const { classLabels } = useGameCatalog()
@@ -27,6 +29,7 @@ export function OperatorCard({
   return (
     <article className={`operator-card${selected ? ' selected' : ''}`} style={style}>
       <button
+        id={buttonId}
         type="button"
         className="operator-card-main"
         onClick={onSelect}
