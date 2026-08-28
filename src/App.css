@@ -938,6 +938,7 @@
 }
 
 .dictation-steps li.complete {
+  background: #fafafa;
   color: var(--text);
 }
 
