@@ -16,8 +16,10 @@ import {
 import {
   clearSnapshot,
   guestStoragePrefix,
+  readShowJapaneseTranslations,
   readSnapshot,
   userStoragePrefix,
+  writeShowJapaneseTranslations,
   writeSnapshot,
 } from '../lib/localStateStorage'
 import {
@@ -57,6 +59,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     initialSnapshot.favoriteVoiceIds,
   )
   const [attempts, setAttempts] = useState(initialSnapshot.attempts)
+  const [showJapaneseTranslations, setShowJapaneseTranslations] = useState(() =>
+    readShowJapaneseTranslations(window.localStorage),
+  )
   const [syncStatus, setSyncStatus] = useState<AppStateValue['syncStatus']>('local')
   const [syncError, setSyncError] = useState<string | null>(null)
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
@@ -67,6 +72,13 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const syncChainRef = useRef<Promise<void>>(Promise.resolve())
   const latestTaskRef = useRef(0)
   userIdRef.current = user?.id ?? null
+
+  useEffect(() => {
+    writeShowJapaneseTranslations(
+      window.localStorage,
+      showJapaneseTranslations,
+    )
+  }, [showJapaneseTranslations])
 
   const setSnapshot = useCallback((snapshot: UserDataSnapshot, prefix: string) => {
     activeStoragePrefixRef.current = prefix
@@ -231,6 +243,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     enqueueOperation({ id: operationId(), type: 'clear_attempts' })
   }, [commitSnapshot, enqueueOperation])
 
+  const toggleJapaneseTranslations = useCallback(() => {
+    setShowJapaneseTranslations((current) => !current)
+  }, [])
+
   const retrySync = useCallback(() => {
     const userId = userIdRef.current
     if (!userId) return
@@ -251,8 +267,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       favoriteOperatorIds,
       favoriteVoiceIds,
       attempts,
+      showJapaneseTranslations,
       toggleOperatorFavorite,
       toggleVoiceFavorite,
+      toggleJapaneseTranslations,
       recordAttempt,
       clearProgress,
       syncStatus,
@@ -268,8 +286,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       lastSyncedAt,
       recordAttempt,
       retrySync,
+      showJapaneseTranslations,
       syncError,
       syncStatus,
+      toggleJapaneseTranslations,
       toggleOperatorFavorite,
       toggleVoiceFavorite,
     ],

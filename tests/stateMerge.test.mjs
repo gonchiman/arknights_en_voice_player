@@ -12,8 +12,10 @@ import {
 import {
   clearSnapshot,
   guestStoragePrefix,
+  readShowJapaneseTranslations,
   readSnapshot,
   userStoragePrefix,
+  writeShowJapaneseTranslations,
   writeSnapshot,
 } from '../src/lib/localStateStorage.ts'
 
@@ -148,4 +150,17 @@ test('ゲストとログインユーザーのキャッシュを分離する', ()
   clearSnapshot(storage, signedInPrefix)
   assert.deepEqual(readSnapshot(storage, signedInPrefix), empty)
   assert.deepEqual(readSnapshot(storage, guestStoragePrefix), guest)
+})
+
+test('日本語訳の表示設定を端末全体で保持する', () => {
+  const storage = memoryStorage()
+
+  assert.equal(readShowJapaneseTranslations(storage), true)
+  writeShowJapaneseTranslations(storage, false)
+  assert.equal(readShowJapaneseTranslations(storage), false)
+  writeShowJapaneseTranslations(storage, true)
+  assert.equal(readShowJapaneseTranslations(storage), true)
+
+  storage.setItem('akvp.showJapaneseTranslations', JSON.stringify('false'))
+  assert.equal(readShowJapaneseTranslations(storage), true)
 })

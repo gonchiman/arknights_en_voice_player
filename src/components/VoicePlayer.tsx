@@ -26,9 +26,12 @@ export function VoicePlayer({
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
-  const [showJapanese, setShowJapanese] = useState(true)
   const [audioError, setAudioError] = useState(false)
-  const { favoriteVoiceIds, toggleVoiceFavorite } = useAppState()
+  const {
+    favoriteVoiceIds,
+    showJapaneseTranslations,
+    toggleVoiceFavorite,
+  } = useAppState()
   const isFavorite = favoriteVoiceIds.includes(voice.id)
   const canSpeakFallback =
     voice.english.trim().length > 0 &&
@@ -234,14 +237,7 @@ export function VoicePlayer({
       {!hideText && (
         <div className="voice-transcript">
           <p lang="en">{voice.english}</p>
-          {showJapanese && <p lang="ja">{voice.japanese}</p>}
-          <button
-            type="button"
-            className="text-toggle"
-            onClick={() => setShowJapanese((current) => !current)}
-          >
-            {showJapanese ? '日本語訳を隠す' : '日本語訳を表示'}
-          </button>
+          {showJapaneseTranslations && <p lang="ja">{voice.japanese}</p>}
         </div>
       )}
     </article>

@@ -3,6 +3,7 @@ import type { UserDataSnapshot } from './stateMerge'
 type StateStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 
 export const guestStoragePrefix = 'akvp'
+const showJapaneseTranslationsKey = `${guestStoragePrefix}.showJapaneseTranslations`
 
 function readStored<T>(storage: StateStorage, key: string, fallback: T): T {
   try {
@@ -23,6 +24,21 @@ function storageKeys(prefix: string) {
 
 export function userStoragePrefix(userId: string) {
   return `akvp.user.${userId}`
+}
+
+export function readShowJapaneseTranslations(storage: StateStorage): boolean {
+  const stored = readStored<unknown>(storage, showJapaneseTranslationsKey, true)
+  return typeof stored === 'boolean' ? stored : true
+}
+
+export function writeShowJapaneseTranslations(
+  storage: StateStorage,
+  showJapaneseTranslations: boolean,
+) {
+  storage.setItem(
+    showJapaneseTranslationsKey,
+    JSON.stringify(showJapaneseTranslations),
+  )
 }
 
 export function readSnapshot(

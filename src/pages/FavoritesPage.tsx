@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Icon } from '../components/Icon'
 import { OperatorCard } from '../components/OperatorCard'
+import { TranslationToggle } from '../components/TranslationToggle'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { getOperator, operators, voiceLines } from '../data/operators'
 import { sortOperatorsByJapaneseName } from '../lib/operatorSorting'
@@ -59,6 +60,7 @@ export function FavoritesPage() {
                 <p className="eyebrow">SAVED VOICE RECORDS</p>
                 <h2>{favoriteVoices.length} saved voices</h2>
               </div>
+              {favoriteVoices.length > 0 && <TranslationToggle />}
             </div>
             {favoriteVoices.length > 0 ? (
               <div className="favorite-voice-list">

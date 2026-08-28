@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { OperatorCard } from '../components/OperatorCard'
 import { OperatorFilterPanel } from '../components/OperatorFilterPanel'
+import { TranslationToggle } from '../components/TranslationToggle'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { classLabels, operators, playableVoiceLines, voiceLines } from '../data/operators'
 import { useOperatorSearch } from '../hooks/useOperatorSearch'
@@ -132,6 +133,7 @@ export function OperatorsPage() {
 
               <div className="voice-section-heading">
                 <h2>ボイス {selectedOperator.voices.length}件</h2>
+                {selectedOperator.voices.length > 0 && <TranslationToggle />}
               </div>
 
               {selectedOperator.voices.length > 0 ? (

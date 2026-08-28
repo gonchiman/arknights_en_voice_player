@@ -734,14 +734,9 @@
   font-size: 11px;
 }
 
-.text-toggle {
-  margin-top: 7px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #555;
-  font-size: 10px;
-  text-decoration: underline;
+.translation-toggle {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .voice-coming-soon,
