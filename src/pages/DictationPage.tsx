@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Icon } from '../components/Icon'
+import { DictationScoringGuide } from '../components/DictationScoringGuide'
 import { OperatorCard } from '../components/OperatorCard'
 import { OperatorFilterPanel } from '../components/OperatorFilterPanel'
 import { VoicePlayer } from '../components/VoicePlayer'
@@ -40,6 +41,7 @@ export function DictationPage() {
   const [voiceCategory, setVoiceCategory] = useState('all')
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState<Result | null>(null)
+  const [showScoringGuide, setShowScoringGuide] = useState(false)
   const favoriteOperatorIdSet = useMemo(
     () => new Set(favoriteOperatorIds),
     [favoriteOperatorIds],
@@ -96,6 +98,7 @@ export function DictationPage() {
   }, [attempts])
 
   const selectOperator = (operatorId: string) => {
+    setShowScoringGuide(false)
     setSelectedOperatorId(operatorId)
     setCurrentVoiceId('')
     setVoiceQuery('')
@@ -105,12 +108,14 @@ export function DictationPage() {
   }
 
   const selectVoice = (voiceId: string) => {
+    setShowScoringGuide(false)
     setCurrentVoiceId(voiceId)
     setAnswer('')
     setResult(null)
   }
 
   const returnToOperators = () => {
+    setShowScoringGuide(false)
     setSelectedOperatorId('')
     setCurrentVoiceId('')
     setAnswer('')
@@ -118,6 +123,7 @@ export function DictationPage() {
   }
 
   const returnToVoiceSelection = () => {
+    setShowScoringGuide(false)
     setCurrentVoiceId('')
     setAnswer('')
     setResult(null)
@@ -127,6 +133,10 @@ export function DictationPage() {
     operatorSearch.resetFilters()
     setFavoriteOnly(false)
   }
+
+  const closeScoringGuide = useCallback(() => {
+    setShowScoringGuide(false)
+  }, [])
 
   const checkAnswer = () => {
     if (!currentVoice || !answer.trim()) return
@@ -364,7 +374,16 @@ export function DictationPage() {
               checkAnswer()
             }}
           >
-            <label htmlFor="dictation-answer">TYPE WHAT YOU HEAR</label>
+            <div className="dictation-form-heading">
+              <label htmlFor="dictation-answer">TYPE WHAT YOU HEAR</label>
+              <button
+                type="button"
+                className="dictation-scoring-open-button"
+                onClick={() => setShowScoringGuide(true)}
+              >
+                採点ルール
+              </button>
+            </div>
             <textarea
               id="dictation-answer"
               value={answer}
@@ -413,6 +432,10 @@ export function DictationPage() {
                 </div>
               </div>
             </div>
+          )}
+
+          {showScoringGuide && (
+            <DictationScoringGuide onClose={closeScoringGuide} />
           )}
         </section>
       )}

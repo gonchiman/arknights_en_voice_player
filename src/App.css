@@ -297,7 +297,7 @@
 .filter-selects label > span,
 .dictation-toolbar label > span,
 .dictation-voice-filter label > span,
-.dictation-form > label {
+.dictation-form-heading > label {
   color: #444;
   font-size: 11px;
 }
@@ -986,6 +986,129 @@
   font-size: 10px;
 }
 
+.dictation-scoring-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  padding: 16px;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 42%);
+}
+
+.dictation-scoring-dialog {
+  width: min(760px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  box-shadow: 0 18px 48px rgb(0 0 0 / 24%);
+}
+
+.dictation-scoring-dialog-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  min-height: 54px;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+
+.dictation-scoring-dialog-header h2 {
+  margin: 1px 0 0;
+  font-size: 16px;
+}
+
+.dictation-scoring-dialog-close {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.dictation-scoring-dialog-close:hover,
+.dictation-scoring-dialog-close:focus-visible {
+  background: var(--surface-hover);
+}
+
+.dictation-scoring-dialog-body {
+  padding: 12px;
+}
+
+.dictation-scoring-summary {
+  margin: 0 0 10px;
+  color: #444;
+  font-size: 11px;
+}
+
+.dictation-scoring-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--border);
+}
+
+.dictation-scoring-grid section {
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+.dictation-scoring-grid section + section {
+  border-left: 1px solid var(--border);
+}
+
+.dictation-scoring-grid h3 {
+  margin: 0 0 6px;
+  font-size: 11px;
+}
+
+.dictation-scoring-grid ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #444;
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.dictation-scoring-grid p {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.dictation-scoring-dialog code {
+  font-family: var(--font-mono);
+}
+
+.dictation-scoring-examples {
+  margin-top: 10px;
+  padding: 8px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 16px;
+  border: 1px solid var(--border);
+  background: #f8f8f8;
+  color: #444;
+  font-size: 10px;
+}
+
+.dictation-scoring-examples > strong {
+  font-size: 10px;
+}
+
 .dictation-operator-step,
 .dictation-voice-selection {
   margin-top: 14px;
@@ -1229,6 +1352,28 @@
 .dictation-form {
   display: grid;
   gap: 6px;
+}
+
+.dictation-form-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dictation-scoring-open-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #555;
+  font-size: 10px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dictation-scoring-open-button:hover,
+.dictation-scoring-open-button:focus-visible {
+  color: var(--text);
 }
 
 .dictation-form textarea {
@@ -1567,6 +1712,23 @@
 
   .dictation-clear-progress {
     width: 100%;
+  }
+
+  .dictation-scoring-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dictation-scoring-grid section + section {
+    border-top: 1px solid var(--border);
+    border-left: 0;
+  }
+
+  .dictation-scoring-backdrop {
+    padding: 8px;
+  }
+
+  .dictation-scoring-dialog {
+    max-height: calc(100dvh - 16px);
   }
 
   .dictation-voice-filter,
