@@ -886,10 +886,6 @@
 
 .dictation-steps li {
   min-width: 98px;
-  padding: 0 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
   color: var(--text-muted);
   font-size: 10px;
 }
@@ -898,7 +894,35 @@
   border-left: 1px solid var(--border);
 }
 
-.dictation-steps li > span {
+.dictation-steps li > button {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.dictation-steps li > button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.dictation-steps li.complete > button:not(:disabled):hover {
+  background: var(--surface-hover);
+}
+
+.dictation-steps li.complete > button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+
+.dictation-steps li > button > span {
   width: 17px;
   height: 17px;
   display: grid;
@@ -913,7 +937,7 @@
   color: #fff;
 }
 
-.dictation-steps li.current > span {
+.dictation-steps li.current > button > span {
   border-color: #fff;
 }
 
@@ -921,7 +945,7 @@
   color: var(--text);
 }
 
-.dictation-steps li.complete > span {
+.dictation-steps li.complete > button > span {
   background: #eee;
 }
 

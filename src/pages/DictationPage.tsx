@@ -159,14 +159,25 @@ export function DictationPage() {
           {['オペレーター', 'ボイス', '回答'].map((label, index) => {
             const step = index + 1
             const state = step === currentStep ? ' current' : step < currentStep ? ' complete' : ''
+            const canNavigate = step < currentStep
             return (
               <li
                 key={label}
                 className={state}
                 aria-current={step === currentStep ? 'step' : undefined}
               >
-                <span>{step}</span>
-                {label}
+                <button
+                  type="button"
+                  disabled={!canNavigate}
+                  aria-label={canNavigate ? `${label}選択へ戻る` : undefined}
+                  onClick={() => {
+                    if (step === 1) returnToOperators()
+                    if (step === 2) returnToVoiceSelection()
+                  }}
+                >
+                  <span>{step}</span>
+                  {label}
+                </button>
               </li>
             )
           })}
