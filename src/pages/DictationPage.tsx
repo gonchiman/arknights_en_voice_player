@@ -4,7 +4,7 @@ import { DictationScoringGuide } from '../components/DictationScoringGuide'
 import { OperatorCard } from '../components/OperatorCard'
 import { OperatorFilterPanel } from '../components/OperatorFilterPanel'
 import { VoicePlayer } from '../components/VoicePlayer'
-import { getOperator, operators, voiceLines } from '../data/operators'
+import { operators } from '../data/operators'
 import { useOperatorSearch } from '../hooks/useOperatorSearch'
 import { useAppState } from '../state/useAppState'
 import { answerScore } from '../utils/text'
@@ -31,7 +31,6 @@ export function DictationPage() {
     attempts,
     favoriteOperatorIds,
     recordAttempt,
-    clearProgress,
   } = useAppState()
   const operatorSearch = useOperatorSearch(dictationOperators)
   const [favoriteOnly, setFavoriteOnly] = useState(false)
@@ -395,37 +394,6 @@ export function DictationPage() {
         </section>
       )}
 
-      {attempts.length > 0 && (
-        <section className="progress-section">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">LOCAL LEARNING LOG</p>
-              <h2>Recent progress</h2>
-            </div>
-            <button type="button" className="danger-button" onClick={clearProgress}>
-              履歴を消去
-            </button>
-          </div>
-          <div className="attempt-list">
-            {attempts.slice(0, 6).map((attempt) => {
-              const voice = voiceLines.find((line) => line.id === attempt.voiceId)
-              const operator = voice ? getOperator(voice.operatorId) : undefined
-              return (
-                <div key={attempt.id} className="attempt-row">
-                  <span className={attempt.correct ? 'attempt-status correct' : 'attempt-status'}>
-                    {attempt.score}
-                  </span>
-                  <div>
-                    <strong>{operator?.name ?? 'Unknown'} · {voice?.label ?? 'Voice'}</strong>
-                    <small>{new Date(attempt.createdAt).toLocaleString('ja-JP')}</small>
-                  </div>
-                  <span>{attempt.correct ? 'Mastered' : 'Practice'}</span>
-                </div>
-              )
-            })}
-          </div>
-        </section>
-      )}
     </>
   )
 }
