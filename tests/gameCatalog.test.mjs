@@ -34,14 +34,19 @@ test('EndfieldカタログのIDと英日台詞が整合する', () => {
   }
 })
 
-test('Endfieldデータを名前空間化し、音声ファイルを含めずTTSで再生する', () => {
+test('Endfieldデータを名前空間化し、公開元の英語音声をストリーミングする', () => {
   assert.equal(endfieldOperators.length, 30)
   assert.equal(endfieldVoiceLines.length, 360)
   assert.ok(endfieldOperators.every((operator) => operator.voices.length === 12))
   assert.ok(endfieldOperators.every((operator) => operator.id.startsWith('endfield:')))
   assert.ok(endfieldVoiceLines.every((voice) => voice.id.startsWith('endfield:')))
-  assert.ok(endfieldVoiceLines.every((voice) => voice.audioUrl === null))
-  assert.ok(endfieldVoiceLines.every((voice) => voice.playbackMode === 'tts'))
+  assert.ok(
+    endfieldVoiceLines.every((voice) =>
+      voice.audioUrl?.startsWith('https://static.warfarin.wiki/'),
+    ),
+  )
+  assert.ok(endfieldVoiceLines.every((voice) => voice.displayCode?.startsWith('EN / ')))
+  assert.ok(endfieldVoiceLines.every((voice) => voice.playbackMode === 'audio'))
 })
 
 test('作品間でオペレーターIDとボイスIDが衝突しない', () => {
@@ -59,13 +64,20 @@ test('作品間でオペレーターIDとボイスIDが衝突しない', () => {
 })
 
 test('実行環境とデータの両方を満たす音声だけを再生可能と判定する', () => {
-  const ttsVoice = endfieldVoiceLines[0]
+  const audioVoice = endfieldVoiceLines[0]
+  const ttsVoice = {
+    ...audioVoice,
+    playbackMode: 'tts',
+    audioUrl: null,
+  }
   const invalidAudioVoice = {
-    ...ttsVoice,
+    ...audioVoice,
     playbackMode: 'audio',
     audioUrl: null,
   }
 
+  assert.equal(isVoiceConfiguredForPlayback(audioVoice), true)
+  assert.equal(isVoicePlayable(audioVoice), true)
   assert.equal(isVoiceConfiguredForPlayback(ttsVoice), true)
   assert.equal(isVoiceConfiguredForPlayback(invalidAudioVoice), false)
   assert.equal(isVoicePlayable(ttsVoice), false)

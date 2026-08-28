@@ -8,7 +8,6 @@ import {
   getModeSwitchPath,
 } from '../config/gameModes'
 import { getGameCatalog } from '../data/catalogs'
-import { canUseBrowserTts } from '../lib/voicePlayback'
 import { GameCatalogContext } from '../state/gameCatalogContext'
 import { AccountControl } from './AccountControl'
 
@@ -17,7 +16,6 @@ export function AppLayout() {
   const currentGameId = getGameModeFromPath(location.pathname)
   const currentGame = gameModes.find((gameMode) => gameMode.id === currentGameId) ?? gameModes[0]
   const catalog = getGameCatalog(currentGameId)
-  const ttsUnavailable = catalog.id === 'endfield' && !canUseBrowserTts()
 
   useEffect(() => {
     document.title = `${currentGame.name} EN Voice Player`
@@ -77,12 +75,8 @@ export function AppLayout() {
         <main className="main-content">
           {catalog.notice && (
             <aside className="mode-notice" aria-label="Endfieldモードの音声について">
-              <strong>BROWSER TTS MODE</strong>
-              <span>
-                {ttsUnavailable
-                  ? 'このブラウザは音声読み上げに対応していないため、台詞の閲覧のみ利用できます。'
-                  : catalog.notice}
-              </span>
+              <strong>STREAMING AUDIO</strong>
+              <span>{catalog.notice}</span>
               <a href={catalog.source.url} target="_blank" rel="noreferrer">
                 データ出典
               </a>
