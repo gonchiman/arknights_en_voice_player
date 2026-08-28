@@ -61,12 +61,41 @@ export function VoicePlayer({
     }
   }, [voice.audioUrl])
 
+  const seek = useCallback((value: number) => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.currentTime = value
+    setCurrentTime(value)
+  }, [])
+
+  const movePlayback = useCallback(
+    (seconds: number) => {
+      const audio = audioRef.current
+      if (!audio) return
+
+      const maximum = Number.isFinite(audio.duration)
+        ? audio.duration
+        : Number.POSITIVE_INFINITY
+      const nextTime = Math.min(
+        maximum,
+        Math.max(0, audio.currentTime + seconds),
+      )
+      seek(nextTime)
+    },
+    [seek],
+  )
+
   useEffect(() => {
     if (!exerciseMode || !voice.audioUrl) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      const isPlaybackShortcut =
+        event.code === 'Space' ||
+        event.code === 'ArrowLeft' ||
+        event.code === 'ArrowRight'
+
       if (
-        event.code !== 'Space' ||
+        !isPlaybackShortcut ||
         event.repeat ||
         event.defaultPrevented ||
         event.altKey ||
@@ -88,12 +117,18 @@ export function VoicePlayer({
       }
 
       event.preventDefault()
-      void togglePlayback()
+      if (event.code === 'ArrowLeft') {
+        movePlayback(-1)
+      } else if (event.code === 'ArrowRight') {
+        movePlayback(1)
+      } else {
+        void togglePlayback()
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [exerciseMode, togglePlayback, voice.audioUrl])
+  }, [exerciseMode, movePlayback, togglePlayback, voice.audioUrl])
 
   const speakFallback = () => {
     if (!canSpeakFallback) return
@@ -114,18 +149,14 @@ export function VoicePlayer({
     </button>
   ) : null
 
-  const seek = (value: number) => {
-    const audio = audioRef.current
-    if (!audio) return
-    audio.currentTime = value
-    setCurrentTime(value)
-  }
-
   return (
     <article
       className={`voice-player${exerciseMode ? ' exercise-player' : ''}${
         voice.audioUrl ? '' : ' voice-unavailable'
       }`}
+      aria-keyshortcuts={
+        exerciseMode ? 'Space ArrowLeft ArrowRight' : undefined
+      }
     >
       <div className="voice-player-topline">
         <div>

@@ -315,8 +315,15 @@ export function DictationPage() {
               <Icon name="headphones" size={19} />
               <span>必要なだけ繰り返し再生してください</span>
               <span className="dictation-keyboard-shortcut">
-                <kbd>Space</kbd>
-                再生 / 一時停止
+                <span>
+                  <kbd>Space</kbd>
+                  再生 / 一時停止
+                </span>
+                <span>
+                  <kbd>←</kbd>
+                  <kbd>→</kbd>
+                  1秒移動
+                </span>
               </span>
             </p>
             <VoicePlayer voice={currentVoice} hideText exerciseMode />
