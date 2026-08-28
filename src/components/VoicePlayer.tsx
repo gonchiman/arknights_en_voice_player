@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  claimVoicePlayback,
+  ownsVoicePlayback,
+  releaseVoicePlayback,
+} from '../lib/voicePlaybackCoordinator'
 import { canUseBrowserTts, voiceDisplayCode } from '../lib/voicePlayback'
 import { useAppState } from '../state/useAppState'
 import type { VoiceLine } from '../types/app'
@@ -25,6 +30,7 @@ export function VoicePlayer({
 }: VoicePlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const speechUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
+  const playbackOwnerRef = useRef(Symbol(voice.id))
   const [isPlaying, setIsPlaying] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -43,26 +49,52 @@ export function VoicePlayer({
   const canSpeakFallback = voice.english.trim().length > 0 && canUseBrowserTts()
   const hasTtsPlayback = isTts && canSpeakFallback
 
-  useEffect(() => {
+  const pausePlayback = useCallback(() => {
+    audioRef.current?.pause()
+
+    if (speechUtteranceRef.current) {
+      speechUtteranceRef.current = null
+      window.speechSynthesis.cancel()
+    }
+
+    setIsPlaying(false)
+    setIsSpeaking(false)
+    releaseVoicePlayback(playbackOwnerRef.current)
+  }, [])
+
+  const resetPlayback = useCallback(() => {
     const audio = audioRef.current
     audio?.pause()
-    if (speechUtteranceRef.current) {
-      window.speechSynthesis.cancel()
-      speechUtteranceRef.current = null
+    if (audio) {
+      audio.currentTime = 0
     }
+
+    if (speechUtteranceRef.current) {
+      speechUtteranceRef.current = null
+      window.speechSynthesis.cancel()
+    }
+
     setIsPlaying(false)
     setIsSpeaking(false)
     setCurrentTime(0)
+    releaseVoicePlayback(playbackOwnerRef.current)
+  }, [])
+
+  useEffect(() => {
+    resetPlayback()
     setDuration(0)
     setAudioError(false)
     setSpeechError(false)
-  }, [audioUrl, voice.id])
+  }, [audioUrl, resetPlayback, voice.id])
 
   useEffect(
     () => () => {
-      if (!speechUtteranceRef.current) return
-      window.speechSynthesis.cancel()
-      speechUtteranceRef.current = null
+      audioRef.current?.pause()
+      if (speechUtteranceRef.current) {
+        speechUtteranceRef.current = null
+        window.speechSynthesis.cancel()
+      }
+      releaseVoicePlayback(playbackOwnerRef.current)
     },
     [],
   )
@@ -72,16 +104,25 @@ export function VoicePlayer({
     if (!audio || !audioUrl) return
 
     if (audio.paused) {
+      pausePlayback()
+      claimVoicePlayback(playbackOwnerRef.current, resetPlayback)
       try {
         await audio.play()
-        setAudioError(false)
+        if (ownsVoicePlayback(playbackOwnerRef.current)) {
+          setAudioError(false)
+        } else {
+          audio.pause()
+        }
       } catch {
-        setAudioError(true)
+        if (ownsVoicePlayback(playbackOwnerRef.current)) {
+          setAudioError(true)
+          releaseVoicePlayback(playbackOwnerRef.current)
+        }
       }
     } else {
-      audio.pause()
+      pausePlayback()
     }
-  }, [audioUrl])
+  }, [audioUrl, pausePlayback, resetPlayback])
 
   const seek = useCallback((value: number) => {
     const audio = audioRef.current
@@ -111,12 +152,12 @@ export function VoicePlayer({
     if (!canSpeakFallback) return
 
     if (isSpeaking) {
-      window.speechSynthesis.cancel()
-      speechUtteranceRef.current = null
-      setIsSpeaking(false)
+      pausePlayback()
       return
     }
 
+    resetPlayback()
+    claimVoicePlayback(playbackOwnerRef.current, resetPlayback)
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(voice.english)
     utterance.lang = 'en-US'
@@ -125,11 +166,13 @@ export function VoicePlayer({
       if (speechUtteranceRef.current !== utterance) return
       speechUtteranceRef.current = null
       setIsSpeaking(false)
+      releaseVoicePlayback(playbackOwnerRef.current)
     }
     utterance.onerror = (event) => {
       if (speechUtteranceRef.current !== utterance) return
       speechUtteranceRef.current = null
       setIsSpeaking(false)
+      releaseVoicePlayback(playbackOwnerRef.current)
       if (event.error !== 'canceled' && event.error !== 'interrupted') {
         setSpeechError(true)
       }
@@ -138,7 +181,7 @@ export function VoicePlayer({
     setSpeechError(false)
     setIsSpeaking(true)
     window.speechSynthesis.speak(utterance)
-  }, [canSpeakFallback, isSpeaking, voice.english])
+  }, [canSpeakFallback, isSpeaking, pausePlayback, resetPlayback, voice.english])
 
   useEffect(() => {
     if (!exerciseMode || (!hasAudioPlayback && !hasTtsPlayback)) return
@@ -248,9 +291,21 @@ export function VoicePlayer({
             ref={audioRef}
             src={audioUrl ?? undefined}
             preload="none"
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-            onEnded={() => setIsPlaying(false)}
+            onPlay={(event) => {
+              if (!ownsVoicePlayback(playbackOwnerRef.current)) {
+                event.currentTarget.pause()
+                return
+              }
+              setIsPlaying(true)
+            }}
+            onPause={() => {
+              setIsPlaying(false)
+              releaseVoicePlayback(playbackOwnerRef.current)
+            }}
+            onEnded={() => {
+              setIsPlaying(false)
+              releaseVoicePlayback(playbackOwnerRef.current)
+            }}
             onDurationChange={(event) => setDuration(event.currentTarget.duration)}
             onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
             onError={() => setAudioError(true)}
