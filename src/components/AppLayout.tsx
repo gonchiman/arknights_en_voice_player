@@ -73,15 +73,6 @@ export function AppLayout() {
         </header>
 
         <main className="main-content">
-          {catalog.notice && (
-            <aside className="mode-notice" aria-label="Endfieldモードの音声について">
-              <strong>STREAMING AUDIO</strong>
-              <span>{catalog.notice}</span>
-              <a href={catalog.source.url} target="_blank" rel="noreferrer">
-                データ出典
-              </a>
-            </aside>
-          )}
           <Outlet key={catalog.id} />
         </main>
 

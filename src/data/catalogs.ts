@@ -27,8 +27,6 @@ export const endfieldCatalog: GameCatalog = {
     label: 'Warfarin Wiki（データ・音声出典）',
     url: 'https://warfarin.wiki/en/operators',
   },
-  notice:
-    '英語音声はWarfarin Wikiからストリーミング再生します。取得できない場合はブラウザTTSへ切り替えられます。公開元の変更により再生できなくなる場合があります。',
 }
 
 const catalogs: Record<GameModeId, GameCatalog> = {

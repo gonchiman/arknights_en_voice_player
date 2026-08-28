@@ -223,6 +223,11 @@ export function VoicePlayer({
           <h3>{voice.label}</h3>
         </div>
         <div className="voice-player-actions">
+          {voice.voiceVariant && (
+            <span className="voice-variant-badge">
+              {voice.voiceVariant === 'female' ? 'FEMALE' : 'MALE'}
+            </span>
+          )}
           {!hasAudioPlayback && (
             <span className="unavailable-badge">{isTts ? 'BROWSER TTS' : 'NO AUDIO'}</span>
           )}

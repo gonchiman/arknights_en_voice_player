@@ -1,20 +1,23 @@
-import { useEffect, useMemo, useRef, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { OperatorCard } from '../components/OperatorCard'
 import { OperatorFilterPanel } from '../components/OperatorFilterPanel'
 import { TranslationToggle } from '../components/TranslationToggle'
 import { VoicePlayer } from '../components/VoicePlayer'
+import { VoiceVariantSwitch } from '../components/VoiceVariantSwitch'
 import { useOperatorSearch } from '../hooks/useOperatorSearch'
 import { sortOperatorsByJapaneseName } from '../lib/operatorSorting'
 import { isVoicePlayable } from '../lib/voicePlayback'
 import { useGameCatalog } from '../state/gameCatalogContext'
 import { useAppState } from '../state/useAppState'
+import type { VoiceVariant } from '../types/app'
 
 export function OperatorsPage() {
   const catalog = useGameCatalog()
   const operatorDetailRef = useRef<HTMLElement>(null)
   const [searchParams, setSearchParams] = useSearchParams()
+  const [voiceVariant, setVoiceVariant] = useState<VoiceVariant>('female')
   const operatorsByJapaneseName = useMemo(
     () => sortOperatorsByJapaneseName(catalog.operators),
     [catalog.operators],
@@ -28,12 +31,23 @@ export function OperatorsPage() {
   const selectedOperator =
     filteredOperators.find((operator) => operator.id === requestedOperator) ??
     filteredOperators[0]
+  const hasVoiceVariants = Boolean(
+    selectedOperator?.voices.some((voice) => voice.voiceVariant),
+  )
+  const visibleVoices =
+    selectedOperator?.voices.filter(
+      (voice) => !hasVoiceVariants || voice.voiceVariant === voiceVariant,
+    ) ?? []
 
   useEffect(() => {
     if (requestedOperator) {
       operatorDetailRef.current?.scrollTo({ top: 0 })
     }
   }, [requestedOperator])
+
+  useEffect(() => {
+    setVoiceVariant('female')
+  }, [selectedOperator?.id])
 
   const closeOperatorDetail = () => {
     const nextSearchParams = new URLSearchParams(searchParams)
@@ -137,13 +151,23 @@ export function OperatorsPage() {
               <p className="operator-description">{selectedOperator.description}</p>
 
               <div className="voice-section-heading">
-                <h2>ボイス {selectedOperator.voices.length}件</h2>
-                {selectedOperator.voices.length > 0 && <TranslationToggle />}
+                <h2>
+                  ボイス {visibleVoices.length}
+                  {hasVoiceVariants ? ` / ${selectedOperator.voices.length}` : ''}件
+                </h2>
+                <div className="voice-section-tools">
+                  <VoiceVariantSwitch
+                    voices={selectedOperator.voices}
+                    value={voiceVariant}
+                    onChange={setVoiceVariant}
+                  />
+                  {selectedOperator.voices.length > 0 && <TranslationToggle />}
+                </div>
               </div>
 
-              {selectedOperator.voices.length > 0 ? (
+              {visibleVoices.length > 0 ? (
                 <div className="voice-list">
-                  {selectedOperator.voices.map((line) => (
+                  {visibleVoices.map((line) => (
                     <VoicePlayer key={line.id} voice={line} />
                   ))}
                 </div>

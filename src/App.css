@@ -188,34 +188,6 @@
   padding: 12px 16px 40px;
 }
 
-.mode-notice {
-  margin-bottom: 12px;
-  padding: 9px 11px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid #aab4ba;
-  border-left: 3px solid #42535d;
-  background: #f3f6f7;
-  color: var(--text-muted);
-  font-size: 10px;
-  line-height: 1.6;
-}
-
-.mode-notice strong {
-  flex-shrink: 0;
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.05em;
-}
-
-.mode-notice a {
-  margin-left: auto;
-  flex-shrink: 0;
-  font-size: 10px;
-}
-
 .eyebrow {
   display: none;
 }
@@ -665,8 +637,46 @@
 .voice-section-heading {
   margin: 0;
   padding: 9px 14px;
+  flex-wrap: wrap;
+  align-items: center;
   border-bottom: 1px solid var(--border);
   background: #f7f7f7;
+}
+
+.voice-section-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.voice-variant-switch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.voice-variant-switch > button {
+  min-height: 28px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.voice-variant-switch > button.active {
+  background: #252b2f;
+  color: #fff;
+}
+
+.voice-variant-switch small {
+  font-family: var(--font-mono);
+  font-size: 8px;
 }
 
 .voice-list,
@@ -812,6 +822,15 @@
 .translation-toggle {
   flex: 0 0 auto;
   white-space: nowrap;
+}
+
+.voice-variant-badge {
+  padding: 3px 5px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.04em;
 }
 
 .tts-controls {
@@ -1295,6 +1314,13 @@
 .dictation-selection-header span {
   color: var(--text-muted);
   font-size: 10px;
+}
+
+.dictation-voice-selection > .voice-variant-switch {
+  padding: 8px 12px;
+  justify-content: flex-end;
+  border-bottom: 1px solid var(--border);
+  background: #fafafa;
 }
 
 .dictation-voice-options {
@@ -1821,15 +1847,6 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 8px;
-  }
-
-  .mode-notice {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .mode-notice a {
-    margin-left: 0;
   }
 
   .nav-link {

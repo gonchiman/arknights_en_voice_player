@@ -4,12 +4,14 @@ import { DictationScoringGuide } from '../components/DictationScoringGuide'
 import { OperatorCard } from '../components/OperatorCard'
 import { OperatorFilterPanel } from '../components/OperatorFilterPanel'
 import { VoicePlayer } from '../components/VoicePlayer'
+import { VoiceVariantSwitch } from '../components/VoiceVariantSwitch'
 import { useOperatorSearch } from '../hooks/useOperatorSearch'
 import { sortOperatorsByJapaneseName } from '../lib/operatorSorting'
 import { isVoicePlayable, voiceDisplayCode } from '../lib/voicePlayback'
 import { useGameCatalog } from '../state/gameCatalogContext'
 import { useAppState } from '../state/useAppState'
 import { answerScore } from '../utils/text'
+import type { VoiceVariant } from '../types/app'
 
 type Result = {
   score: number
@@ -49,6 +51,7 @@ export function DictationPage() {
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState<Result | null>(null)
   const [showScoringGuide, setShowScoringGuide] = useState(false)
+  const [voiceVariant, setVoiceVariant] = useState<VoiceVariant>('female')
 
   useEffect(() => {
     setFavoriteOnly(false)
@@ -57,6 +60,7 @@ export function DictationPage() {
     setAnswer('')
     setResult(null)
     setShowScoringGuide(false)
+    setVoiceVariant('female')
   }, [catalog.id])
 
   const favoriteOperatorIdSet = useMemo(
@@ -73,7 +77,11 @@ export function DictationPage() {
   const selectedOperator = dictationOperators.find(
     (operator) => operator.id === selectedOperatorId,
   )
-  const selectedVoices = selectedOperator?.voices.filter(isVoicePlayable) ?? []
+  const allSelectedVoices = selectedOperator?.voices.filter(isVoicePlayable) ?? []
+  const hasVoiceVariants = allSelectedVoices.some((voice) => voice.voiceVariant)
+  const selectedVoices = allSelectedVoices.filter(
+    (voice) => !hasVoiceVariants || voice.voiceVariant === voiceVariant,
+  )
   const currentVoice = selectedVoices.find((voice) => voice.id === currentVoiceId)
   const currentStep = currentVoice ? 3 : selectedOperator ? 2 : 1
 
@@ -109,6 +117,7 @@ export function DictationPage() {
     setCurrentVoiceId('')
     setAnswer('')
     setResult(null)
+    setVoiceVariant('female')
   }
 
   const selectVoice = (voiceId: string) => {
@@ -265,9 +274,18 @@ export function DictationPage() {
             </button>
             <div>
               <strong>{selectedOperator.japaneseName}</strong>
-              <span>{selectedOperator.name} · {selectedVoices.length} voices</span>
+              <span>
+                {selectedOperator.name} · {selectedVoices.length}
+                {hasVoiceVariants ? ` / ${allSelectedVoices.length}` : ''} voices
+              </span>
             </div>
           </div>
+
+          <VoiceVariantSwitch
+            voices={allSelectedVoices}
+            value={voiceVariant}
+            onChange={setVoiceVariant}
+          />
 
           <div className="dictation-voice-options">
             {selectedVoices.map((voice) => (
@@ -282,7 +300,14 @@ export function DictationPage() {
                 </span>
                 <span>
                   <strong>{voice.label}</strong>
-                  <small>{voice.category}</small>
+                  <small>
+                    {voice.voiceVariant === 'female'
+                      ? '女性音声 · '
+                      : voice.voiceVariant === 'male'
+                        ? '男性音声 · '
+                        : ''}
+                    {voice.category}
+                  </small>
                 </span>
                 <span
                   className={`dictation-voice-best-score${
@@ -318,7 +343,13 @@ export function DictationPage() {
               <p className="eyebrow">CURRENT SPEAKER</p>
               <h2>{selectedOperator.japaneseName}</h2>
               <p>
-                {selectedOperator.name} · {currentVoice.category} · {currentVoice.label}
+                {selectedOperator.name} ·{' '}
+                {currentVoice.voiceVariant === 'female'
+                  ? '女性音声 · '
+                  : currentVoice.voiceVariant === 'male'
+                    ? '男性音声 · '
+                    : ''}
+                {currentVoice.category} · {currentVoice.label}
               </p>
             </div>
           </div>

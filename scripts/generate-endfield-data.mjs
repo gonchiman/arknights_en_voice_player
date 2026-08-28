@@ -5,28 +5,13 @@ import { fileURLToPath } from 'node:url'
 
 const sourceRoot = 'https://warfarin.wiki'
 const audioSourceRoot = 'https://static.warfarin.wiki/'
+const dataApiRoot = 'https://endfield-assets.fffdan.com'
+const endministratorMaleId = 'chr_0002_endminm'
 const operatorIndexUrl = `${sourceRoot}/en/operators`
 const outputPath = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../src/data/endfieldOperatorData.ts',
 )
-const voiceLimitPerOperator = 12
-
-const preferredVoiceLabels = [
-  'Operation Prep 1',
-  'Adding to Team 1',
-  'Switching Weapon',
-  'Watching Combat Records',
-  'Operator Promotion 1',
-  'Operator Reporting for Duty',
-  'Standing by 1',
-  'Greeting 1',
-  'Trust Dialog 1',
-  'Combat Begins 1',
-  'Combat Victory 1',
-  'Final Strike 1',
-]
-
 const elementAccents = {
   Heat: '#e16d4f',
   Cryo: '#68a9ce',
@@ -121,25 +106,56 @@ function parseVoiceRows(html, locale) {
   return rows
 }
 
-function selectVoiceRows(englishRows) {
-  const selected = []
-  const selectedCodes = new Set()
+function parseJsonWithStringIds(value) {
+  return JSON.parse(
+    value.replace(/("id"\s*:\s*)(-?\d+)/g, '$1"$2"'),
+  )
+}
 
-  for (const label of preferredVoiceLabels) {
-    const row = [...englishRows.values()].find((candidate) => candidate.label === label)
-    if (!row || selectedCodes.has(row.fileCode)) continue
-    selected.push(row)
-    selectedCodes.add(row.fileCode)
-  }
+function audioVersionFromUrl(url) {
+  const match = url.match(/^https:\/\/static\.warfarin\.wiki\/(v\d+)\//)
+  if (!match) throw new Error(`unknown audio URL version: ${url}`)
+  return match[1]
+}
 
-  for (const row of englishRows.values()) {
-    if (selected.length >= voiceLimitPerOperator) break
-    if (selectedCodes.has(row.fileCode)) continue
-    selected.push(row)
-    selectedCodes.add(row.fileCode)
-  }
+async function fetchEndministratorMaleRows(audioVersion) {
+  const [recordText, englishDictText, japaneseDictText] = await Promise.all([
+    fetchText(`${dataApiRoot}/table/CharacterTable/${endministratorMaleId}`),
+    fetchText(
+      `${dataApiRoot}/i18n/dict/EN/table/CharacterTable/${endministratorMaleId}`,
+    ),
+    fetchText(
+      `${dataApiRoot}/i18n/dict/JP/table/CharacterTable/${endministratorMaleId}`,
+    ),
+  ])
+  const record = parseJsonWithStringIds(recordText)
+  const englishDict = JSON.parse(englishDictText)
+  const japaneseDict = JSON.parse(japaneseDictText)
 
-  return selected.slice(0, voiceLimitPerOperator)
+  return record.profileVoice.map((voice) => {
+    const label = englishDict[voice.voiceTitle.id]
+    const english = englishDict[voice.voiceDesc.id]
+    const japanese = japaneseDict[voice.voiceDesc.id]
+    if (!label || !english || !japanese) {
+      throw new Error(`missing Endministrator localization: ${voice.voId}`)
+    }
+
+    return {
+      english: {
+        audioUrl: `${audioSourceRoot}${audioVersion}/audio/en/char/${endministratorMaleId}/${voice.voId}.mp3`,
+        charId: endministratorMaleId,
+        fileCode: voice.voId,
+        label,
+        text: english,
+      },
+      japanese: {
+        charId: endministratorMaleId,
+        fileCode: voice.voId,
+        label: japaneseDict[voice.voiceTitle.id] ?? label,
+        text: japanese,
+      },
+    }
+  })
 }
 
 function categoryFor(label) {
@@ -160,6 +176,12 @@ function initialsFor(name) {
   return (words[0] ?? 'EF').slice(0, 2).toUpperCase()
 }
 
+function voiceVariant(charId) {
+  if (charId.endsWith('_endminm')) return { code: 'EN-M', value: 'male' }
+  if (charId.endsWith('_endminf')) return { code: 'EN-F', value: 'female' }
+  return null
+}
+
 async function parseOperator(slug) {
   const englishUrl = `${sourceRoot}/en/operators/${slug}`
   const japaneseUrl = `${sourceRoot}/jp/operators/${slug}`
@@ -170,7 +192,18 @@ async function parseOperator(slug) {
 
   const englishRows = parseVoiceRows(englishHtml, 'en')
   const japaneseRows = parseVoiceRows(japaneseHtml, 'jp')
-  const selectedRows = selectVoiceRows(englishRows)
+  if (slug === 'endministrator') {
+    const firstAudioUrl = englishRows.values().next().value?.audioUrl
+    if (!firstAudioUrl) throw new Error(`${englishUrl}: missing audio version`)
+    const maleRows = await fetchEndministratorMaleRows(
+      audioVersionFromUrl(firstAudioUrl),
+    )
+    for (const row of maleRows) {
+      englishRows.set(row.english.fileCode, row.english)
+      japaneseRows.set(row.japanese.fileCode, row.japanese)
+    }
+  }
+  const selectedRows = [...englishRows.values()]
   if (selectedRows.length === 0) throw new Error(`${englishUrl}: no dialogue rows found`)
 
   const name = capture(englishHtml, /<title>([\s\S]*?)<\/title>/, 'name', englishUrl)
@@ -200,11 +233,15 @@ async function parseOperator(slug) {
     'element',
     englishUrl,
   )
-  const voiceActor = captureOptional(
+  const pageVoiceActor = captureOptional(
     englishHtml,
     /<th[^>]*>English<\/th><td[^>]*>([\s\S]*?)<\/td>/,
     '—',
   )
+  const voiceActor =
+    slug === 'endministrator'
+      ? `${pageVoiceActor} (F) / Hyoie O'Grady (M)`
+      : pageVoiceActor
   const faction = captureOptional(
     englishHtml,
     /<h3[^>]*>Faction<\/h3>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/,
@@ -221,22 +258,31 @@ async function parseOperator(slug) {
   )
   const charId = selectedRows[0].charId
   const operatorId = `endfield:${charId}`
+  const hasVoiceVariants = new Set(selectedRows.map((row) => row.charId)).size > 1
+  const voiceNumberByCharId = new Map()
   const voices = selectedRows.flatMap((englishRow, index) => {
     const japaneseRow = japaneseRows.get(englishRow.fileCode)
     if (!japaneseRow?.text) return []
 
+    const variant = hasVoiceVariants ? voiceVariant(englishRow.charId) : null
+    const voiceNumber = (voiceNumberByCharId.get(englishRow.charId) ?? 0) + 1
+    voiceNumberByCharId.set(englishRow.charId, voiceNumber)
+
     return [
       {
-        id: `${operatorId}:${englishRow.fileCode}`,
+        id: `endfield:${englishRow.charId}:${englishRow.fileCode}`,
         operatorId,
         fileCode: englishRow.fileCode,
-        displayCode: `EN / ${String(index + 1).padStart(2, '0')}`,
+        displayCode: `${variant?.code ?? 'EN'} / ${String(
+          variant ? voiceNumber : index + 1,
+        ).padStart(2, '0')}`,
         label: englishRow.label,
         category: categoryFor(englishRow.label),
         english: englishRow.text,
         japanese: japaneseRow.text,
         audioUrl: englishRow.audioUrl,
         playbackMode: 'audio',
+        voiceVariant: variant?.value,
       },
     ]
   })
@@ -314,9 +360,11 @@ async function main() {
   const output = `// Generated by scripts/generate-endfield-data.mjs from Warfarin Wiki.\n// Audio is streamed from the source URL and is not copied into this repository.\n// Original game text, audio, and related intellectual property belong to their respective rights holders.\nimport type { Operator } from '../types/app'\n\nexport const endfieldDataMetadata = ${JSON.stringify(
     {
       sourceUrl: operatorIndexUrl,
+      supplementalSourceUrl: `${dataApiRoot}/table/CharacterTable/${endministratorMaleId}`,
       generatedAt,
       operatorCount: operators.length,
       voiceCount,
+      voiceCoverage: 'all-aligned-profile-voice-lines',
     },
     null,
     2,

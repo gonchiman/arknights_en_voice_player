@@ -35,9 +35,10 @@ test('EndfieldカタログのIDと英日台詞が整合する', () => {
 })
 
 test('Endfieldデータを名前空間化し、公開元の英語音声をストリーミングする', () => {
+  const audioUrls = endfieldVoiceLines.map((voice) => voice.audioUrl)
   assert.equal(endfieldOperators.length, 30)
-  assert.equal(endfieldVoiceLines.length, 360)
-  assert.ok(endfieldOperators.every((operator) => operator.voices.length === 12))
+  assert.equal(endfieldVoiceLines.length, 2454)
+  assert.ok(endfieldOperators.every((operator) => operator.voices.length >= 79))
   assert.ok(endfieldOperators.every((operator) => operator.id.startsWith('endfield:')))
   assert.ok(endfieldVoiceLines.every((voice) => voice.id.startsWith('endfield:')))
   assert.ok(
@@ -45,8 +46,31 @@ test('Endfieldデータを名前空間化し、公開元の英語音声をスト
       voice.audioUrl?.startsWith('https://static.warfarin.wiki/'),
     ),
   )
-  assert.ok(endfieldVoiceLines.every((voice) => voice.displayCode?.startsWith('EN / ')))
+  assert.equal(new Set(audioUrls).size, endfieldVoiceLines.length)
+  assert.ok(
+    endfieldVoiceLines.every((voice) => /^EN(?:-[FM])? \/ /.test(voice.displayCode)),
+  )
   assert.ok(endfieldVoiceLines.every((voice) => voice.playbackMode === 'audio'))
+})
+
+test('管理人の女性版と男性版を別IDの各55件として保持する', () => {
+  const endministrator = endfieldOperators.find(
+    (operator) => operator.name === 'Endministrator',
+  )
+  assert.ok(endministrator)
+
+  const femaleVoices = endministrator.voices.filter(
+    (voice) => voice.voiceVariant === 'female',
+  )
+  const maleVoices = endministrator.voices.filter(
+    (voice) => voice.voiceVariant === 'male',
+  )
+  assert.equal(femaleVoices.length, 55)
+  assert.equal(maleVoices.length, 55)
+  assert.ok(femaleVoices.every((voice) => voice.displayCode?.startsWith('EN-F / ')))
+  assert.ok(maleVoices.every((voice) => voice.displayCode?.startsWith('EN-M / ')))
+  assert.ok(femaleVoices.every((voice) => voice.id.includes('chr_0003_endminf')))
+  assert.ok(maleVoices.every((voice) => voice.id.includes('chr_0002_endminm')))
 })
 
 test('作品間でオペレーターIDとボイスIDが衝突しない', () => {

@@ -6,6 +6,8 @@ export type OperatorRarity = number
 
 export type VoicePlaybackMode = 'audio' | 'tts' | 'unavailable'
 
+export type VoiceVariant = 'female' | 'male'
+
 export type VoiceLine = {
   id: string
   operatorId: string
@@ -17,6 +19,7 @@ export type VoiceLine = {
   japanese: string
   audioUrl: string | null
   playbackMode: VoicePlaybackMode
+  voiceVariant?: VoiceVariant
 }
 
 export type Operator = {
@@ -51,7 +54,6 @@ export type GameCatalog = {
     label: string
     url: string
   }
-  notice?: string
 }
 
 export type DictationAttempt = {

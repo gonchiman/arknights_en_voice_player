@@ -24,7 +24,7 @@
 
 オペレーター情報と英語・日本語テキストは[ArknightsGamedata](https://github.com/ArknightsAssets/ArknightsGamedata)、音声は[Arknights Audio](https://github.com/PseudoMon/arknights-audio)の公開データを使用しています。音声はネットワーク経由で再生し、取得できない場合は対応ブラウザの英語音声合成へ切り替えられます。ゲーム音声はリポジトリへ複製していません。
 
-エンドフィールドモードには、現行データで確認できた30名と、学習向けに選んだ各12件（合計360件）の英語・日本語テキストを収録し、英語音声の再生に対応しています。データの出典は[Warfarin Wiki](https://warfarin.wiki/en/operators)です。音声ファイルはリポジトリへ複製せず、公開元からストリーミングし、取得できない場合は端末の一般的なブラウザ音声合成へ切り替えられます。
+エンドフィールドモードには、現行データで確認できた30名・2,454件の英語／日本語テキストと英語音声を収録しています。管理人は女性版・男性版の各55件を切り替えられます。主なデータの出典は[Warfarin Wiki](https://warfarin.wiki/en/operators)で、管理人男性版の英日テキストは[Endfield Data API](https://github.com/Deliay/endfield-development-skills/blob/main/find-endfield-data/SKILL.md)から補完します。音声ファイルはリポジトリへ複製せず、公開元からストリーミングし、取得できない場合は端末の一般的なブラウザ音声合成へ切り替えられます。
 
 全レアリティのオペレーターカタログと音声データは次のコマンドで再生成できます。既存8名の内部IDは、お気に入りと学習履歴の互換性を保つため維持されます。
 
